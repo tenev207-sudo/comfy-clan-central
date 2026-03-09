@@ -3,12 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingBag, Leaf, Wallet, Barcode, Settings2, Truck, ArrowRight, Clock, MapPin, Phone, Mail, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import breadImg from "@/assets/bread.jpg";
+import vegetablesImg from "@/assets/vegetables.jpg";
+import cheeseImg from "@/assets/cheese.jpg";
+import sushiImg from "@/assets/sushi.jpg";
 
 const offers = [
-  { discount: "-50%", expiry: "Изтича днес", shop: 'Пекарна "Златен Клас"', name: "Пакет занаятчийски хляб и закуски (Излишък)", oldPrice: "12.00 лв.", newPrice: "6.00 лв.", img: "🍞" },
-  { discount: "-40%", expiry: "Годно до утре", shop: 'Супермаркет "Свежест"', name: "Микс свежи зеленчуци (2 кг) - Нестандартни", oldPrice: "8.50 лв.", newPrice: "5.10 лв.", img: "🥦" },
-  { discount: "-60%", expiry: "Изтича след 2 дни", shop: 'Магазин "Млечен Път"', name: "Кашкавал от краве мляко (400 гр)", oldPrice: "11.90 лв.", newPrice: "4.76 лв.", img: "🧀" },
-  { discount: "-30%", expiry: "Изтича днес", shop: 'Ресторант "Азия"', name: 'Суши сет "Сьомга" (12 хапки) - от обедно меню', oldPrice: "18.00 лв.", newPrice: "12.60 лв.", img: "🍣" },
+  { discount: "-50%", expiry: "Изтича днес", shop: 'Пекарна "Златен Клас"', name: "Пакет занаятчийски хляб и закуски (Излишък)", oldPrice: "12.00 лв.", newPrice: "6.00 лв.", img: breadImg },
+  { discount: "-40%", expiry: "Годно до утре", shop: 'Супермаркет "Свежест"', name: "Микс свежи зеленчуци (2 кг) - Нестандартни", oldPrice: "8.50 лв.", newPrice: "5.10 лв.", img: vegetablesImg },
+  { discount: "-60%", expiry: "Изтича след 2 дни", shop: 'Магазин "Млечен Път"', name: "Кашкавал от краве мляко (400 гр)", oldPrice: "11.90 лв.", newPrice: "4.76 лв.", img: cheeseImg },
+  { discount: "-30%", expiry: "Изтича днес", shop: 'Ресторант "Азия"', name: 'Суши сет "Сьомга" (12 хапки) - от обедно меню', oldPrice: "18.00 лв.", newPrice: "12.60 лв.", img: sushiImg },
 ];
 
 const Index = () => {
@@ -83,8 +87,8 @@ const Index = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {offers.map((o, i) => (
               <Card key={i} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
-                <div className="relative h-44 bg-muted flex items-center justify-center text-6xl">
-                  {o.img}
+                <div className="relative h-44 bg-muted overflow-hidden">
+                  <img src={o.img} alt={o.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
                     {o.discount}
                   </span>
