@@ -87,7 +87,7 @@ const Index = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {offers.map((o, i) => (
               <Card key={i} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
-                <div className="relative h-44 bg-muted flex items-center justify-center text-6xl">
+                <div className="relative h-44 bg-muted overflow-hidden">
                   {o.img}
                   <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
                     {o.discount}
