@@ -88,7 +88,7 @@ const Index = () => {
             {offers.map((o, i) => (
               <Card key={i} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
                 <div className="relative h-44 bg-muted overflow-hidden">
-                  {o.img}
+                  <img src={o.img} alt={o.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
                     {o.discount}
                   </span>
