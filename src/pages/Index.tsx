@@ -1,21 +1,28 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingBag, Leaf, Wallet, Barcode, Settings2, Truck, ArrowRight, Clock, MapPin, Phone, Mail, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import breadImg from "@/assets/bread.jpg";
-import vegetablesImg from "@/assets/vegetables.jpg";
-import cheeseImg from "@/assets/cheese.jpg";
-import sushiImg from "@/assets/sushi.jpg";
-
-const offers = [
-  { discount: "-50%", expiry: "Изтича днес", shop: 'Пекарна "Златен Клас"', name: "Пакет занаятчийски хляб и закуски (Излишък)", oldPrice: "12.00 лв.", newPrice: "6.00 лв.", img: breadImg },
-  { discount: "-40%", expiry: "Годно до утре", shop: 'Супермаркет "Свежест"', name: "Микс свежи зеленчуци (2 кг) - Нестандартни", oldPrice: "8.50 лв.", newPrice: "5.10 лв.", img: vegetablesImg },
-  { discount: "-60%", expiry: "Изтича след 2 дни", shop: 'Магазин "Млечен Път"', name: "Кашкавал от краве мляко (400 гр)", oldPrice: "11.90 лв.", newPrice: "4.76 лв.", img: cheeseImg },
-  { discount: "-30%", expiry: "Изтича днес", shop: 'Ресторант "Азия"', name: 'Суши сет "Сьомга" (12 хапки) - от обедно меню', oldPrice: "18.00 лв.", newPrice: "12.60 лв.", img: sushiImg },
-];
+import ProductDetailDialog from "@/components/ProductDetailDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart, type Product } from "@/contexts/CartContext";
+import { formatDistanceToNow } from "date-fns";
+import { bg } from "date-fns/locale";
 
 const Index = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from("products").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(4);
+      if (data) setProducts(data as Product[]);
+    };
+    load();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -34,18 +41,22 @@ const Index = () => {
             Купувай качествени продукти от местни супермаркети и пекарни с наближаващ срок на годност. Експресна термо-доставка директно до твоята врата.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="gap-2 text-base">
-              <ShoppingBag className="h-5 w-5" /> Разгледай офертите
-            </Button>
-            <Button size="lg" variant="outline" className="gap-2 text-base">
-              <Leaf className="h-5 w-5" /> Стани партньор
-            </Button>
+            <Link to="/products">
+              <Button size="lg" className="gap-2 text-base">
+                <ShoppingBag className="h-5 w-5" /> Разгледай офертите
+              </Button>
+            </Link>
+            <Link to="/partners">
+              <Button size="lg" variant="outline" className="gap-2 text-base">
+                <Leaf className="h-5 w-5" /> Стани партньор
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Why Section */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section id="how-it-works" className="py-16 md:py-24 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">Защо го правим?</h2>
@@ -72,59 +83,66 @@ const Index = () => {
       </section>
 
       {/* Offers */}
-      <section className="py-16 md:py-24">
+      <section id="offers" className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="flex items-end justify-between mb-10">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">Актуални спасявания</h2>
               <p className="text-muted-foreground mt-2">Експресна доставка до 45 минути в рамките на Стара Загора.</p>
             </div>
-            <Button variant="ghost" className="hidden md:flex gap-1 text-primary">
-              Виж всички <ChevronRight className="h-4 w-4" />
-            </Button>
+            <Link to="/products" className="hidden md:flex">
+              <Button variant="ghost" className="gap-1 text-primary">
+                Виж всички <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {offers.map((o, i) => (
-              <Card key={i} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
-                <div className="relative h-44 bg-muted overflow-hidden">
-                  <img src={o.img} alt={o.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
-                    {o.discount}
-                  </span>
-                  <span className="absolute bottom-3 left-3 bg-background/90 backdrop-blur text-xs px-2.5 py-1 rounded-full flex items-center gap-1 text-muted-foreground">
-                    <Clock className="h-3 w-3" /> {o.expiry}
-                  </span>
-                </div>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {o.shop}
-                  </p>
-                  <h3 className="font-semibold text-sm text-foreground mb-3 line-clamp-2">{o.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs line-through text-muted-foreground mr-2">{o.oldPrice}</span>
-                      <span className="text-lg font-bold text-primary">{o.newPrice}</span>
-                    </div>
-                    <Button size="icon" variant="outline" className="h-8 w-8 rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground">
-                      <ShoppingBag className="h-4 w-4" />
-                    </Button>
+            {products.map((p) => {
+              const timeLeft = formatDistanceToNow(new Date(p.expiry_date), { addSuffix: true, locale: bg });
+              return (
+                <Card key={p.id} className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
+                  <div className="relative h-44 bg-muted overflow-hidden cursor-pointer" onClick={() => setSelectedProduct(p)}>
+                    {p.image_url && <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
+                    <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
+                      {p.discount}
+                    </span>
+                    <span className="absolute bottom-3 left-3 bg-background/90 backdrop-blur text-xs px-2.5 py-1 rounded-full flex items-center gap-1 text-muted-foreground">
+                      <Clock className="h-3 w-3" /> {timeLeft}
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" /> {p.shop}
+                    </p>
+                    <h3 className="font-semibold text-sm text-foreground mb-3 line-clamp-2 cursor-pointer hover:text-primary" onClick={() => setSelectedProduct(p)}>{p.name}</h3>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs line-through text-muted-foreground mr-2">{Number(p.old_price).toFixed(2)} лв.</span>
+                        <span className="text-lg font-bold text-primary">{Number(p.new_price).toFixed(2)} лв.</span>
+                      </div>
+                      <Button size="icon" variant="outline" className="h-8 w-8 rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground" onClick={() => addToCart(p)}>
+                        <ShoppingBag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="text-center mt-8 md:hidden">
-            <Button variant="outline" className="gap-1">
-              Виж всички оферти <ArrowRight className="h-4 w-4" />
-            </Button>
+            <Link to="/products">
+              <Button variant="outline" className="gap-1">
+                Виж всички оферти <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* For Merchants */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section id="merchants" className="py-16 md:py-24 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
@@ -150,9 +168,11 @@ const Index = () => {
                   </div>
                 ))}
               </div>
-              <Button size="lg" className="mt-8 gap-2">
-                Регистрирай своя магазин <ArrowRight className="h-4 w-4" />
-              </Button>
+              <Link to="/partners">
+                <Button size="lg" className="mt-8 gap-2">
+                  Регистрирай своя магазин <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
 
             {/* Mock merchant dashboard */}
@@ -201,23 +221,29 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+              <Link to="/" className="text-xl font-bold mb-3 flex items-center gap-2">
                 <Leaf className="h-5 w-5 text-primary" /> SmartBiteSZ
-              </h3>
-              <p className="text-background/60 text-sm leading-relaxed">
+              </Link>
+              <p className="text-background/60 text-sm leading-relaxed mt-3">
                 Първият дигитален хипермаркет за спасена храна в Стара Загора.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-3">За Потребители</h4>
               <ul className="space-y-2 text-sm text-background/60">
-                <li>Как работи</li><li>Разгледай продукти</li><li>Доставка и плащане</li><li>ЧЗВ</li>
+                <li><a href="/#how-it-works" className="hover:text-background transition-colors">Как работи</a></li>
+                <li><Link to="/products" className="hover:text-background transition-colors">Разгледай продукти</Link></li>
+                <li><Link to="/delivery" className="hover:text-background transition-colors">Доставка и плащане</Link></li>
+                <li><Link to="/faq" className="hover:text-background transition-colors">ЧЗВ</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-3">За Бизнеса</h4>
               <ul className="space-y-2 text-sm text-background/60">
-                <li>Стани партньор</li><li>Вход за търговци</li><li>Условия за ползване</li><li>Свържи се</li>
+                <li><Link to="/partners" className="hover:text-background transition-colors">Стани партньор</Link></li>
+                <li><Link to="/auth" className="hover:text-background transition-colors">Вход за търговци</Link></li>
+                <li><Link to="/terms" className="hover:text-background transition-colors">Условия за ползване</Link></li>
+                <li><Link to="/privacy" className="hover:text-background transition-colors">Поверителност</Link></li>
               </ul>
             </div>
             <div>
@@ -234,6 +260,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <ProductDetailDialog product={selectedProduct} open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)} />
     </div>
   );
 };
