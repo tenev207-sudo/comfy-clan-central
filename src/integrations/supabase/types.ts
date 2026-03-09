@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          discount: string
+          expiry_date: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          new_price: number
+          old_price: number
+          shop: string
+          stock: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          discount: string
+          expiry_date: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          new_price: number
+          old_price: number
+          shop: string
+          stock?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          discount?: string
+          expiry_date?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          new_price?: number
+          old_price?: number
+          shop?: string
+          stock?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
