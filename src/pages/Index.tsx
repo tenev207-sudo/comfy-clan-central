@@ -3,12 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingBag, Leaf, Wallet, Barcode, Settings2, Truck, ArrowRight, Clock, MapPin, Phone, Mail, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import breadImg from "@/assets/bread.jpg";
+import vegetablesImg from "@/assets/vegetables.jpg";
+import cheeseImg from "@/assets/cheese.jpg";
+import sushiImg from "@/assets/sushi.jpg";
 
 const offers = [
-  { discount: "-50%", expiry: "Изтича днес", shop: 'Пекарна "Златен Клас"', name: "Пакет занаятчийски хляб и закуски (Излишък)", oldPrice: "12.00 лв.", newPrice: "6.00 лв.", img: "🍞" },
-  { discount: "-40%", expiry: "Годно до утре", shop: 'Супермаркет "Свежест"', name: "Микс свежи зеленчуци (2 кг) - Нестандартни", oldPrice: "8.50 лв.", newPrice: "5.10 лв.", img: "🥦" },
-  { discount: "-60%", expiry: "Изтича след 2 дни", shop: 'Магазин "Млечен Път"', name: "Кашкавал от краве мляко (400 гр)", oldPrice: "11.90 лв.", newPrice: "4.76 лв.", img: "🧀" },
-  { discount: "-30%", expiry: "Изтича днес", shop: 'Ресторант "Азия"', name: 'Суши сет "Сьомга" (12 хапки) - от обедно меню', oldPrice: "18.00 лв.", newPrice: "12.60 лв.", img: "🍣" },
+  { discount: "-50%", expiry: "Изтича днес", shop: 'Пекарна "Златен Клас"', name: "Пакет занаятчийски хляб и закуски (Излишък)", oldPrice: "12.00 лв.", newPrice: "6.00 лв.", img: breadImg },
+  { discount: "-40%", expiry: "Годно до утре", shop: 'Супермаркет "Свежест"', name: "Микс свежи зеленчуци (2 кг) - Нестандартни", oldPrice: "8.50 лв.", newPrice: "5.10 лв.", img: vegetablesImg },
+  { discount: "-60%", expiry: "Изтича след 2 дни", shop: 'Магазин "Млечен Път"', name: "Кашкавал от краве мляко (400 гр)", oldPrice: "11.90 лв.", newPrice: "4.76 лв.", img: cheeseImg },
+  { discount: "-30%", expiry: "Изтича днес", shop: 'Ресторант "Азия"', name: 'Суши сет "Сьомга" (12 хапки) - от обедно меню', oldPrice: "18.00 лв.", newPrice: "12.60 лв.", img: sushiImg },
 ];
 
 const Index = () => {
