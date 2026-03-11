@@ -136,7 +136,7 @@ const SellerDashboard = () => {
     fetchData();
   };
 
-  const handleOrderStatus = async (orderId: string, status: string) => {
+  const handleOrderStatus = async (orderId: string, status: "pending" | "paid" | "ready" | "picked_up" | "expired" | "refunded") => {
     await supabase.from("orders").update({ status, updated_at: new Date().toISOString() }).eq("id", orderId);
     fetchData();
     toast({ title: "✅", description: `Order updated to ${status}` });
