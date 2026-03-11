@@ -46,6 +46,57 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          item_id: string
+          item_type: string
+          order_number: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          pickup_code: string
+          quantity: number
+          seller_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_id: string
+          item_type: string
+          order_number?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          pickup_code?: string
+          quantity?: number
+          seller_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_id?: string
+          item_type?: string
+          order_number?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          pickup_code?: string
+          quantity?: number
+          seller_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
@@ -59,6 +110,7 @@ export type Database = {
           name: string
           new_price: number
           old_price: number
+          seller_id: string | null
           shop: string
           stock: number
         }
@@ -74,6 +126,7 @@ export type Database = {
           name: string
           new_price: number
           old_price: number
+          seller_id?: string | null
           shop: string
           stock?: number
         }
@@ -89,6 +142,7 @@ export type Database = {
           name?: string
           new_price?: number
           old_price?: number
+          seller_id?: string | null
           shop?: string
           stock?: number
         }
@@ -101,6 +155,9 @@ export type Database = {
           display_name: string | null
           id: string
           phone: string | null
+          role: string | null
+          shop_address: string | null
+          shop_name: string | null
           updated_at: string
           user_id: string
         }
@@ -110,6 +167,9 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          role?: string | null
+          shop_address?: string | null
+          shop_name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -119,7 +179,79 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          role?: string | null
+          shop_address?: string | null
+          shop_name?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      surprise_boxes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          original_value: number
+          pickup_end: string
+          pickup_start: string
+          price: number
+          quantity: number
+          seller_id: string
+          shop_address: string | null
+          shop_name: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          original_value: number
+          pickup_end: string
+          pickup_start: string
+          price: number
+          quantity?: number
+          seller_id: string
+          shop_address?: string | null
+          shop_name: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          original_value?: number
+          pickup_end?: string
+          pickup_start?: string
+          price?: number
+          quantity?: number
+          seller_id?: string
+          shop_address?: string | null
+          shop_name?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -129,10 +261,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "seller" | "buyer"
+      order_status:
+        | "pending"
+        | "paid"
+        | "ready"
+        | "picked_up"
+        | "expired"
+        | "refunded"
+      payment_method: "card" | "cash" | "app_balance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -259,6 +405,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["seller", "buyer"],
+      order_status: [
+        "pending",
+        "paid",
+        "ready",
+        "picked_up",
+        "expired",
+        "refunded",
+      ],
+      payment_method: ["card", "cash", "app_balance"],
+    },
   },
 } as const
