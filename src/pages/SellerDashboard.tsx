@@ -166,6 +166,7 @@ const SellerDashboard = () => {
               <p className="text-muted-foreground">{profile?.shop_name}</p>
             </div>
             <div className="flex gap-2">
+              <DeleteAccountButton />
               <Button variant="outline" onClick={() => setShowScanner(true)} className="gap-2">
                 <QrCode className="h-4 w-4" /> {t("seller.scanBarcode")}
               </Button>
