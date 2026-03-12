@@ -1,24 +1,53 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const stores = [
-  { name: "Billa", lat: 42.4304, lng: 25.6250, address: "бул. Цар Симеон Велики 100" },
-  { name: "Lidl", lat: 42.4260, lng: 25.6190, address: "бул. Патриарх Евтимий 23" },
-  { name: "Metro", lat: 42.4150, lng: 25.6400, address: "Индустриална зона" },
-  { name: "Kaufland", lat: 42.4350, lng: 25.6100, address: "бул. Славянски 4" },
-  { name: "Billa 2", lat: 42.4280, lng: 25.6350, address: "ул. Генерал Гурко 68" },
-  { name: "Lidl 2", lat: 42.4380, lng: 25.6280, address: "бул. Никола Петков" },
-  { name: "Kaufland 2", lat: 42.4200, lng: 25.6050, address: "ул. Индустриална 15" },
+interface SellerShop {
+  shop_name: string;
+  shop_address: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+const defaultStores = [
+  { shop_name: "Billa", latitude: 42.4304, longitude: 25.6250, shop_address: "бул. Цар Симеон Велики 100" },
+  { shop_name: "Lidl", latitude: 42.4260, longitude: 25.6190, shop_address: "бул. Патриарх Евтимий 23" },
+  { shop_name: "Metro", latitude: 42.4150, longitude: 25.6400, shop_address: "Индустриална зона" },
+  { shop_name: "Kaufland", latitude: 42.4350, longitude: 25.6100, shop_address: "бул. Славянски 4" },
 ];
 
 const MapPage = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const [shops, setShops] = useState<SellerShop[]>(defaultStores);
   const { t } = useI18n();
+
+  useEffect(() => {
+    const loadSellerShops = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("shop_name, shop_address, latitude, longitude")
+        .eq("role", "seller")
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .not("shop_name", "is", null);
+
+      if (data && data.length > 0) {
+        const sellerShops = data.filter(
+          (s: any) => s.latitude && s.longitude && s.shop_name
+        ) as SellerShop[];
+        // Merge default stores + seller shops (avoid duplicates by name)
+        const defaultNames = new Set(defaultStores.map(s => s.shop_name.toLowerCase()));
+        const uniqueSeller = sellerShops.filter(s => !defaultNames.has(s.shop_name.toLowerCase()));
+        setShops([...defaultStores, ...uniqueSeller]);
+      }
+    };
+    loadSellerShops();
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -30,7 +59,17 @@ const MapPage = () => {
       attribution: '© OpenStreetMap contributors',
     }).addTo(map);
 
-    // Fix default icon
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // Update markers when shops change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
     const defaultIcon = L.icon({
       iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
       shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -39,17 +78,12 @@ const MapPage = () => {
       popupAnchor: [1, -34],
     });
 
-    stores.forEach((store) => {
-      L.marker([store.lat, store.lng], { icon: defaultIcon })
+    shops.forEach((store) => {
+      L.marker([store.latitude, store.longitude], { icon: defaultIcon })
         .addTo(map)
-        .bindPopup(`<b>${store.name}</b><br/>${store.address}`);
+        .bindPopup(`<b>${store.shop_name}</b><br/>${store.shop_address || ""}`);
     });
-
-    return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-    };
-  }, []);
+  }, [shops]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,10 +94,10 @@ const MapPage = () => {
           <p className="text-muted-foreground mb-6">{t("map.desc")}</p>
           <div ref={mapRef} className="w-full h-[500px] rounded-2xl overflow-hidden shadow-lg border border-border" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {stores.map((s, i) => (
+            {shops.map((s, i) => (
               <motion.div key={i} whileHover={{ y: -2 }} className="p-4 rounded-xl bg-muted/50 border border-border">
-                <p className="font-bold text-foreground">{s.name}</p>
-                <p className="text-sm text-muted-foreground">{s.address}</p>
+                <p className="font-bold text-foreground">{s.shop_name}</p>
+                <p className="text-sm text-muted-foreground">{s.shop_address || ""}</p>
               </motion.div>
             ))}
           </div>
