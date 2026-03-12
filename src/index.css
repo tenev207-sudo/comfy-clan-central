@@ -3,7 +3,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+/* Add this to your index.css or App.css file */
+#lovable-badge {
+  display: none !important;
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
