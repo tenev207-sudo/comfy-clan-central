@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle } from "lucide-react";
+import DeleteAccountButton from "@/components/DeleteAccountButton";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
