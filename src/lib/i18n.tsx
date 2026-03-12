@@ -91,6 +91,8 @@ const translations = {
   "role.sellerDesc": { bg: "Публикувайте продукти и surprise boxes от вашия магазин.", en: "Publish products and surprise boxes from your shop." },
   "role.shopName": { bg: "Име на магазина", en: "Shop Name" },
   "role.shopAddress": { bg: "Адрес на магазина", en: "Shop Address" },
+  "role.pickLocation": { bg: "Посочете местоположението на картата", en: "Pick location on map" },
+  "role.clickMap": { bg: "Кликнете или плъзнете маркера до вашия магазин", en: "Click or drag the marker to your shop location" },
   "role.continue": { bg: "Продължи", en: "Continue" },
 
   // Seller dashboard
