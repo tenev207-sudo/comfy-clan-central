@@ -154,6 +154,19 @@ const translations = {
   "cart.removed": { bg: "Премахнато", en: "Removed" },
   "cart.removedDesc": { bg: "Продуктът е премахнат от количката.", en: "Product removed from cart." },
 
+  // Account
+  "account.delete": { bg: "Изтрий акаунта", en: "Delete Account" },
+  "account.deleted": { bg: "Акаунтът е изтрит", en: "Account deleted" },
+  "account.deletedDesc": { bg: "Вашият акаунт беше успешно изтрит.", en: "Your account has been successfully deleted." },
+  "account.deleteConfirmTitle": { bg: "Сигурни ли сте?", en: "Are you sure?" },
+  "account.deleteConfirmDesc": { bg: "Това действие е необратимо. Всички ваши данни, поръчки и продукти ще бъдат изтрити завинаги.", en: "This action cannot be undone. All your data, orders, and products will be permanently deleted." },
+
+  // Buyer market view
+  "buyer.allMarkets": { bg: "Магазини и маркети", en: "Markets & Shops" },
+  "buyer.viewProducts": { bg: "Виж продукти", en: "View Products" },
+  "buyer.allProducts": { bg: "Всички продукти", en: "All Products" },
+  "buyer.fromShop": { bg: "от", en: "from" },
+
   // Common
   "common.save": { bg: "Запази", en: "Save" },
   "common.cancel": { bg: "Отказ", en: "Cancel" },
