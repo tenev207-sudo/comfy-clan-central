@@ -4,7 +4,10 @@
   padding: 2rem;
   text-align: center;
 }
-
+/* Add this to your index.css or App.css file */
+#lovable-badge {
+  display: none !important;
+}
 .logo {
   height: 6em;
   padding: 1.5em;
