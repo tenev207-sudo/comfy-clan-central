@@ -1,26 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingBag, Store, Leaf } from "lucide-react";
+import { ShoppingBag, Store, Leaf, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const RolePicker = () => {
   const [selected, setSelected] = useState<"buyer" | "seller" | null>(null);
   const [shopName, setShopName] = useState("");
   const [shopAddress, setShopAddress] = useState("");
+  const [lat, setLat] = useState<number>(42.4280);
+  const [lng, setLng] = useState<number>(25.6200);
   const [loading, setLoading] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
 
   useEffect(() => {
-    // If user already has a role, redirect
     const checkRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
@@ -31,6 +37,48 @@ const RolePicker = () => {
     };
     checkRole();
   }, [navigate]);
+
+  // Initialize map when seller is selected
+  useEffect(() => {
+    if (selected !== "seller" || !mapRef.current || mapInstanceRef.current) return;
+
+    const defaultIcon = L.icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
+    const map = L.map(mapRef.current).setView([42.4280, 25.6200], 14);
+    mapInstanceRef.current = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '© OpenStreetMap',
+    }).addTo(map);
+
+    const marker = L.marker([42.4280, 25.6200], { icon: defaultIcon, draggable: true }).addTo(map);
+    markerRef.current = marker;
+
+    marker.on("dragend", () => {
+      const pos = marker.getLatLng();
+      setLat(pos.lat);
+      setLng(pos.lng);
+    });
+
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      marker.setLatLng(e.latlng);
+      setLat(e.latlng.lat);
+      setLng(e.latlng.lng);
+    });
+
+    // Force re-render of map tiles
+    setTimeout(() => map.invalidateSize(), 200);
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, [selected]);
 
   const handleContinue = async () => {
     if (!selected) return;
@@ -50,6 +98,8 @@ const RolePicker = () => {
           shop_name: shopName,
           shop_address: shopAddress,
           role: "seller",
+          latitude: lat,
+          longitude: lng,
         }).eq("user_id", session.user.id);
       } else {
         await supabase.from("profiles").update({ role: "buyer" }).eq("user_id", session.user.id);
@@ -64,7 +114,7 @@ const RolePicker = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 py-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
         <div className="text-center mb-8">
           <Leaf className="h-10 w-10 text-primary mx-auto mb-3" />
@@ -105,6 +155,15 @@ const RolePicker = () => {
             <div>
               <Label>{t("role.shopAddress")}</Label>
               <Input value={shopAddress} onChange={(e) => setShopAddress(e.target.value)} placeholder="ул. Цар Иван Шишман 12" />
+            </div>
+            <div>
+              <Label className="flex items-center gap-1 mb-2">
+                <MapPin className="h-4 w-4" /> {t("role.pickLocation")}
+              </Label>
+              <div ref={mapRef} className="w-full h-[250px] rounded-xl overflow-hidden border border-border" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("role.clickMap")}
+              </p>
             </div>
           </motion.div>
         )}

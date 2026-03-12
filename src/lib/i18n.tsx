@@ -91,6 +91,8 @@ const translations = {
   "role.sellerDesc": { bg: "Публикувайте продукти и surprise boxes от вашия магазин.", en: "Publish products and surprise boxes from your shop." },
   "role.shopName": { bg: "Име на магазина", en: "Shop Name" },
   "role.shopAddress": { bg: "Адрес на магазина", en: "Shop Address" },
+  "role.pickLocation": { bg: "Посочете местоположението на картата", en: "Pick location on map" },
+  "role.clickMap": { bg: "Кликнете или плъзнете маркера до вашия магазин", en: "Click or drag the marker to your shop location" },
   "role.continue": { bg: "Продължи", en: "Continue" },
 
   // Seller dashboard
@@ -116,6 +118,14 @@ const translations = {
   "buyer.pickupCode": { bg: "Код за взимане", en: "Pickup Code" },
   "buyer.left": { bg: "остават", en: "left" },
   "buyer.pickupWindow": { bg: "Вземи между", en: "Pick up between" },
+  "buyer.mySelection": { bg: "Моят избор", en: "My Selection" },
+  "buyer.emptySelection": { bg: "Не сте избрали нищо все още.", en: "No items selected yet." },
+  "buyer.alreadyAdded": { bg: "Вече добавено", en: "Already added" },
+  "buyer.alreadyAddedDesc": { bg: "Този артикул вече е в избора ви.", en: "This item is already in your selection." },
+  "buyer.addedToCart": { bg: "добавено към избора", en: "added to selection" },
+  "buyer.noBoxes": { bg: "Няма налични surprise boxes в момента.", en: "No surprise boxes available right now." },
+  "buyer.noProducts": { bg: "Няма налични продукти в момента.", en: "No products available right now." },
+  "buyer.noOrders": { bg: "Нямате поръчки.", en: "No orders yet." },
 
   // Checkout
   "checkout.title": { bg: "Плащане", en: "Checkout" },
