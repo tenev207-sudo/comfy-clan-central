@@ -297,8 +297,8 @@ const BuyerDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-3">{p.description}</p>
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs line-through text-muted-foreground mr-1">{Number(p.old_price).toFixed(2)}</span>
-                            <span className="text-lg font-bold text-primary">{Number(p.new_price).toFixed(2)} {t("common.lv")}</span>
+                            <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(p.old_price))}</span>
+                            <span className="text-lg font-bold text-primary">{toEur(Number(p.new_price))} {t("common.lv")}</span>
                           </div>
                           <Button size="sm" onClick={() => addToSelection(p, "product")} disabled={p.stock <= 0}>
                             {t("buyer.reserve")}
