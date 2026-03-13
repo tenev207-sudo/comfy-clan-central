@@ -59,7 +59,7 @@ const CartDrawer = () => {
                         </Button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-primary">{(item.product.new_price * item.quantity).toFixed(2)} лв.</span>
+                        <span className="text-sm font-bold text-primary">{toEur(item.product.new_price * item.quantity)} €</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeFromCart(item.product_id)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
