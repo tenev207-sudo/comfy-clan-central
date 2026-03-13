@@ -161,7 +161,21 @@ const Auth = () => {
                 {loading ? t("auth.loading") : isLogin ? t("auth.login") : t("auth.register")}
               </Button>
             </form>
-            <div className="mt-6 text-center">
+            {isLogin && (
+              <div className="mt-3 text-center">
+                <button onClick={async () => {
+                  if (!email) { toast({ title: t("auth.error"), description: t("forgotPw.enterEmail"), variant: "destructive" }); return; }
+                  setLoading(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+                  setLoading(false);
+                  if (error) { toast({ title: t("auth.error"), description: error.message, variant: "destructive" }); }
+                  else { toast({ title: t("forgotPw.sent"), description: t("forgotPw.sentDesc") }); }
+                }} className="text-sm text-muted-foreground hover:text-primary hover:underline">
+                  {t("forgotPw.link")}
+                </button>
+              </div>
+            )}
+            <div className="mt-3 text-center">
               <button onClick={() => { setIsLogin(!isLogin); setErrors({}); }} className="text-sm text-primary hover:underline">
                 {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}
               </button>
