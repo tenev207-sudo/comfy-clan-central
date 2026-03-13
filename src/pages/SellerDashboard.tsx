@@ -312,7 +312,7 @@ const SellerDashboard = () => {
                       <CardContent className="p-4 flex items-center justify-between">
                         <div>
                           <p className="font-semibold text-foreground">{b.title}</p>
-                          <p className="text-sm text-muted-foreground">{Number(b.price).toFixed(2)} {t("common.lv")} • {b.quantity} {t("common.pieces")}</p>
+                          <p className="text-sm text-muted-foreground">{toEur(Number(b.price))} {t("common.lv")} • {b.quantity} {t("common.pieces")}</p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteBox(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </CardContent>
