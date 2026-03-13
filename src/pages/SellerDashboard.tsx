@@ -338,7 +338,7 @@ const SellerDashboard = () => {
                           </div>
                           <Badge className={statusColor(o.status)}>{o.status}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{Number(o.total_price).toFixed(2)} {t("common.lv")} • {o.payment_method}</p>
+                        <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method}</p>
                         <div className="flex gap-2 mt-3">
                           {o.status === "paid" && (
                             <Button size="sm" onClick={() => handleOrderStatus(o.id, "ready")}>{t("seller.markReady")}</Button>
