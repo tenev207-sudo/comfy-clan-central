@@ -371,7 +371,7 @@ const BuyerDashboard = () => {
                           <p className="font-semibold text-foreground">{o.order_number}</p>
                           <Badge className={statusColor(o.status)}>{o.status}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{Number(o.total_price).toFixed(2)} {t("common.lv")} • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
+                        <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
                         {(o.status === "paid" || o.status === "ready") && (
                           <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
                             <p className="text-sm text-muted-foreground">{t("buyer.pickupCode")}</p>
