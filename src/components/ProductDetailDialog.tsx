@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, ShoppingBag } from "lucide-react";
 import { useCart, type Product } from "@/contexts/CartContext";
+import { toEur } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
 
