@@ -197,7 +197,7 @@ const translations = {
   "common.delete": { bg: "Изтрий", en: "Delete" },
   "common.edit": { bg: "Редактирай", en: "Edit" },
   "common.close": { bg: "Затвори", en: "Close" },
-  "common.lv": { bg: "лв.", en: "BGN" },
+  "common.lv": { bg: "€", en: "€" },
   "common.pieces": { bg: "бр.", en: "pcs" },
 } as const;
 

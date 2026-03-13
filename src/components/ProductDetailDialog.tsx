@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, ShoppingBag } from "lucide-react";
 import { useCart, type Product } from "@/contexts/CartContext";
+import { toEur } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
 
@@ -43,8 +44,8 @@ const ProductDetailDialog = ({ product, open, onOpenChange }: Props) => {
           )}
 
           <div className="flex items-center gap-3 mt-4">
-            <span className="text-sm line-through text-muted-foreground">{Number(product.old_price).toFixed(2)} лв.</span>
-            <span className="text-2xl font-bold text-primary">{Number(product.new_price).toFixed(2)} лв.</span>
+            <span className="text-sm line-through text-muted-foreground">{toEur(Number(product.old_price))} €</span>
+            <span className="text-2xl font-bold text-primary">{toEur(Number(product.new_price))} €</span>
           </div>
 
           <p className="text-xs text-muted-foreground mt-2">Налични: {product.stock} бр.</p>

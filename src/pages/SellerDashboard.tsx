@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toEur } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -264,7 +265,7 @@ const SellerDashboard = () => {
                         <CardContent className="p-4 flex items-center justify-between">
                           <div>
                             <p className="font-semibold text-foreground">{p.name}</p>
-                            <p className="text-sm text-muted-foreground">{p.discount} • {Number(p.new_price).toFixed(2)} {t("common.lv")} • {p.stock} {t("common.pieces")}</p>
+                            <p className="text-sm text-muted-foreground">{p.discount} • {toEur(Number(p.new_price))} {t("common.lv")} • {p.stock} {t("common.pieces")}</p>
                           </div>
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </CardContent>
@@ -311,7 +312,7 @@ const SellerDashboard = () => {
                       <CardContent className="p-4 flex items-center justify-between">
                         <div>
                           <p className="font-semibold text-foreground">{b.title}</p>
-                          <p className="text-sm text-muted-foreground">{Number(b.price).toFixed(2)} {t("common.lv")} • {b.quantity} {t("common.pieces")}</p>
+                          <p className="text-sm text-muted-foreground">{toEur(Number(b.price))} {t("common.lv")} • {b.quantity} {t("common.pieces")}</p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteBox(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </CardContent>
@@ -337,7 +338,7 @@ const SellerDashboard = () => {
                           </div>
                           <Badge className={statusColor(o.status)}>{o.status}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{Number(o.total_price).toFixed(2)} {t("common.lv")} • {o.payment_method}</p>
+                        <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method}</p>
                         <div className="flex gap-2 mt-3">
                           {o.status === "paid" && (
                             <Button size="sm" onClick={() => handleOrderStatus(o.id, "ready")}>{t("seller.markReady")}</Button>
@@ -394,7 +395,7 @@ const SellerDashboard = () => {
                           <p className="font-semibold text-foreground">{c.name}</p>
                           <p className="text-sm text-muted-foreground font-mono">{c.barcode}</p>
                           <p className="text-sm text-muted-foreground">
-                            {Number(c.old_price).toFixed(2)} → {Number(c.new_price).toFixed(2)} {t("common.lv")}
+                            {toEur(Number(c.old_price))} → {toEur(Number(c.new_price))} {t("common.lv")}
                           </p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteCode(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>

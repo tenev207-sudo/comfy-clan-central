@@ -13,6 +13,7 @@ import Navbar from "@/components/Navbar";
 import DeleteAccountButton from "@/components/DeleteAccountButton";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { toEur } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -192,7 +193,7 @@ const BuyerDashboard = () => {
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-foreground text-sm truncate">{item.title}</p>
                               <p className="text-xs text-muted-foreground">{item.shop}</p>
-                              <p className="text-sm font-bold text-primary mt-1">{Number(item.price).toFixed(2)} {t("common.lv")}</p>
+                              <p className="text-sm font-bold text-primary mt-1">{toEur(Number(item.price))} {t("common.lv")}</p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => removeFromSelection(item.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -206,7 +207,7 @@ const BuyerDashboard = () => {
                     <div className="border-t border-border pt-4 mt-4 space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-foreground">{t("checkout.total")}:</span>
-                        <span className="text-xl font-bold text-primary">{totalPrice.toFixed(2)} {t("common.lv")}</span>
+                        <span className="text-xl font-bold text-primary">{toEur(totalPrice)} {t("common.lv")}</span>
                       </div>
                       <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
                         <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
@@ -296,8 +297,8 @@ const BuyerDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-3">{p.description}</p>
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs line-through text-muted-foreground mr-1">{Number(p.old_price).toFixed(2)}</span>
-                            <span className="text-lg font-bold text-primary">{Number(p.new_price).toFixed(2)} {t("common.lv")}</span>
+                            <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(p.old_price))}</span>
+                            <span className="text-lg font-bold text-primary">{toEur(Number(p.new_price))} {t("common.lv")}</span>
                           </div>
                           <Button size="sm" onClick={() => addToSelection(p, "product")} disabled={p.stock <= 0}>
                             {t("buyer.reserve")}
@@ -342,8 +343,8 @@ const BuyerDashboard = () => {
                           </p>
                           <div className="flex items-center justify-between">
                             <div>
-                              <span className="text-xs line-through text-muted-foreground mr-1">{Number(b.original_value).toFixed(2)}</span>
-                              <span className="text-lg font-bold text-primary">{Number(b.price).toFixed(2)} {t("common.lv")}</span>
+                              <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(b.original_value))}</span>
+                              <span className="text-lg font-bold text-primary">{toEur(Number(b.price))} {t("common.lv")}</span>
                             </div>
                             <Button size="sm" onClick={() => addToSelection(b, "surprise_box")} disabled={b.quantity <= 0}>
                               {t("buyer.reserve")}
@@ -370,7 +371,7 @@ const BuyerDashboard = () => {
                           <p className="font-semibold text-foreground">{o.order_number}</p>
                           <Badge className={statusColor(o.status)}>{o.status}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{Number(o.total_price).toFixed(2)} {t("common.lv")} • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
+                        <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
                         {(o.status === "paid" || o.status === "ready") && (
                           <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
                             <p className="text-sm text-muted-foreground">{t("buyer.pickupCode")}</p>

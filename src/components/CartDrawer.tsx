@@ -2,6 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { toEur } from "@/lib/utils";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -58,7 +59,7 @@ const CartDrawer = () => {
                         </Button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-primary">{(item.product.new_price * item.quantity).toFixed(2)} лв.</span>
+                        <span className="text-sm font-bold text-primary">{toEur(item.product.new_price * item.quantity)} €</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeFromCart(item.product_id)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -71,7 +72,7 @@ const CartDrawer = () => {
             <div className="border-t border-border pt-4 mt-4 space-y-3">
               <div className="flex justify-between text-lg font-bold">
                 <span>Общо:</span>
-                <span className="text-primary">{total.toFixed(2)} лв.</span>
+                <span className="text-primary">{toEur(total)} €</span>
               </div>
               <Button className="w-full" size="lg" onClick={() => setOpen(false)}>
                 Към плащане

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart, type Product } from "@/contexts/CartContext";
+import { toEur } from "@/lib/utils";
 import ProductDetailDialog from "@/components/ProductDetailDialog";
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
@@ -70,8 +71,8 @@ const Products = () => {
                     <h3 className="font-semibold text-sm text-foreground mb-3 line-clamp-2 cursor-pointer hover:text-primary" onClick={() => setSelectedProduct(p)}>{p.name}</h3>
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs line-through text-muted-foreground mr-2">{Number(p.old_price).toFixed(2)} лв.</span>
-                        <span className="text-lg font-bold text-primary">{Number(p.new_price).toFixed(2)} лв.</span>
+                        <span className="text-xs line-through text-muted-foreground mr-2">{toEur(Number(p.old_price))} €</span>
+                        <span className="text-lg font-bold text-primary">{toEur(Number(p.new_price))} €</span>
                       </div>
                       <Button size="icon" variant="outline" className="h-8 w-8 rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground" onClick={() => addToCart(p)}>
                         <ShoppingBag className="h-4 w-4" />
