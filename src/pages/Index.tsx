@@ -124,8 +124,8 @@ const Index = () => {
                       </p>
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-xs line-through text-muted-foreground mr-1">{Number(b.original_value).toFixed(2)}</span>
-                          <span className="text-lg font-bold text-primary">{Number(b.price).toFixed(2)} {t("common.lv")}</span>
+                          <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(b.original_value))}</span>
+                          <span className="text-lg font-bold text-primary">{toEur(Number(b.price))} {t("common.lv")}</span>
                         </div>
                         <Link to="/buyer">
                           <Button size="sm">{t("buyer.reserve")}</Button>
