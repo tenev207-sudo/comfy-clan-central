@@ -6,6 +6,7 @@ import { ShoppingBag, Leaf, Wallet, Barcode, Package, ArrowRight, Clock, MapPin,
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { toEur } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
