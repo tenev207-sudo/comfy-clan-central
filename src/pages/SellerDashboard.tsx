@@ -395,7 +395,7 @@ const SellerDashboard = () => {
                           <p className="font-semibold text-foreground">{c.name}</p>
                           <p className="text-sm text-muted-foreground font-mono">{c.barcode}</p>
                           <p className="text-sm text-muted-foreground">
-                            {Number(c.old_price).toFixed(2)} → {Number(c.new_price).toFixed(2)} {t("common.lv")}
+                            {toEur(Number(c.old_price))} → {toEur(Number(c.new_price))} {t("common.lv")}
                           </p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteCode(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
