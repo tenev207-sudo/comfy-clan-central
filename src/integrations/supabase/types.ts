@@ -97,6 +97,42 @@ export type Database = {
         }
         Relationships: []
       }
+      product_codes: {
+        Row: {
+          barcode: string
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          new_price: number
+          old_price: number
+          seller_id: string
+        }
+        Insert: {
+          barcode: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          new_price?: number
+          old_price?: number
+          seller_id: string
+        }
+        Update: {
+          barcode?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          new_price?: number
+          old_price?: number
+          seller_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null

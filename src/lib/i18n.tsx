@@ -167,6 +167,30 @@ const translations = {
   "buyer.allProducts": { bg: "Всички продукти", en: "All Products" },
   "buyer.fromShop": { bg: "от", en: "from" },
 
+  // Forgot / Reset password
+  "forgotPw.link": { bg: "Забравена парола?", en: "Forgot password?" },
+  "forgotPw.enterEmail": { bg: "Въведете имейл адрес първо.", en: "Enter your email address first." },
+  "forgotPw.sent": { bg: "Изпратено!", en: "Sent!" },
+  "forgotPw.sentDesc": { bg: "Проверете имейла си за линк за нулиране на паролата.", en: "Check your email for a password reset link." },
+  "resetPw.title": { bg: "Нова парола", en: "New Password" },
+  "resetPw.enterNew": { bg: "Въведете новата си парола.", en: "Enter your new password." },
+  "resetPw.waiting": { bg: "Изчакване на верификация...", en: "Waiting for verification..." },
+  "resetPw.newPassword": { bg: "Нова парола", en: "New Password" },
+  "resetPw.confirmPassword": { bg: "Потвърдете паролата", en: "Confirm Password" },
+  "resetPw.submit": { bg: "Задай нова парола", en: "Set New Password" },
+  "resetPw.minLength": { bg: "Паролата трябва да е поне 6 символа.", en: "Password must be at least 6 characters." },
+  "resetPw.mismatch": { bg: "Паролите не съвпадат.", en: "Passwords do not match." },
+  "resetPw.success": { bg: "Паролата е сменена!", en: "Password changed!" },
+  "resetPw.successDesc": { bg: "Можете да влезете с новата си парола.", en: "You can now log in with your new password." },
+
+  // Seller product codes
+  "seller.productCodes": { bg: "Кодове на продукти", en: "Product Codes" },
+  "seller.addCode": { bg: "Добави код", en: "Add Code" },
+  "seller.noCodes": { bg: "Нямате запазени продуктови кодове.", en: "No product codes saved yet." },
+  "seller.barcode": { bg: "Баркод", en: "Barcode" },
+  "seller.codeAdded": { bg: "Кодът е добавен!", en: "Code added!" },
+  "seller.codeFound": { bg: "Продуктът е разпознат!", en: "Product recognized!" },
+
   // Common
   "common.save": { bg: "Запази", en: "Save" },
   "common.cancel": { bg: "Отказ", en: "Cancel" },

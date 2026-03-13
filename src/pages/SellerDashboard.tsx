@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle } from "lucide-react";
+import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle, Database } from "lucide-react";
 import DeleteAccountButton from "@/components/DeleteAccountButton";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
@@ -20,11 +20,13 @@ const SellerDashboard = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [boxes, setBoxes] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [productCodes, setProductCodes] = useState<any[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showAddBox, setShowAddBox] = useState(false);
+  const [showAddCode, setShowAddCode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
@@ -47,12 +49,19 @@ const SellerDashboard = () => {
   const [bPickupStart, setBPickupStart] = useState("");
   const [bPickupEnd, setBPickupEnd] = useState("");
 
+  // Code form
+  const [cBarcode, setCBarcode] = useState("");
+  const [cName, setCName] = useState("");
+  const [cDesc, setCDesc] = useState("");
+  const [cOldPrice, setCOldPrice] = useState("");
+  const [cNewPrice, setCNewPrice] = useState("");
+  const [cCategory, setCCategory] = useState("general");
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
       setUserId(session.user.id);
-      // Check role
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
       if (!roles?.some((r: any) => r.role === "seller")) { navigate("/role"); return; }
       const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single();
@@ -63,14 +72,16 @@ const SellerDashboard = () => {
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
-    const [prodRes, boxRes, ordRes] = await Promise.all([
+    const [prodRes, boxRes, ordRes, codeRes] = await Promise.all([
       supabase.from("products").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
       supabase.from("surprise_boxes").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
       supabase.from("orders").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
+      supabase.from("product_codes" as any).select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
     ]);
     if (prodRes.data) setProducts(prodRes.data);
     if (boxRes.data) setBoxes(boxRes.data);
     if (ordRes.data) setOrders(ordRes.data);
+    if (codeRes.data) setProductCodes(codeRes.data as any[]);
   }, [userId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -119,12 +130,47 @@ const SellerDashboard = () => {
     fetchData();
   };
 
-  const handleBarcodeScan = (code: string) => {
-    setPBarcode(code);
-    setPName(`Product ${code}`);
+  const handleAddCode = async () => {
+    if (!userId || !cBarcode || !cName) return;
+    const { error } = await supabase.from("product_codes" as any).insert({
+      seller_id: userId,
+      barcode: cBarcode,
+      name: cName,
+      description: cDesc || null,
+      old_price: parseFloat(cOldPrice) || 0,
+      new_price: parseFloat(cNewPrice) || 0,
+      category: cCategory,
+    } as any);
+    if (error) { toast({ title: t("auth.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: "✅", description: t("seller.codeAdded") });
+    setShowAddCode(false);
+    setCBarcode(""); setCName(""); setCDesc(""); setCOldPrice(""); setCNewPrice(""); setCCategory("general");
+    fetchData();
+  };
+
+  const handleDeleteCode = async (id: string) => {
+    await supabase.from("product_codes" as any).delete().eq("id", id);
+    fetchData();
+  };
+
+  const handleBarcodeScan = async (code: string) => {
     setShowScanner(false);
-    setShowAddProduct(true);
-    toast({ title: "Barcode scanned", description: `Code: ${code}` });
+    // Check if barcode exists in seller's product_codes table
+    const match = productCodes.find((c: any) => c.barcode === code);
+    if (match) {
+      setPBarcode(code);
+      setPName(match.name);
+      setPDesc(match.description || "");
+      setPOldPrice(String(match.old_price || ""));
+      setPNewPrice(String(match.new_price || ""));
+      setShowAddProduct(true);
+      toast({ title: t("seller.codeFound"), description: match.name });
+    } else {
+      setPBarcode(code);
+      setPName(`Product ${code}`);
+      setShowAddProduct(true);
+      toast({ title: "Barcode scanned", description: `Code: ${code}` });
+    }
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -178,8 +224,10 @@ const SellerDashboard = () => {
               <TabsTrigger value="products" className="gap-1"><Package className="h-4 w-4" /> {t("seller.products")}</TabsTrigger>
               <TabsTrigger value="boxes" className="gap-1"><ShoppingBag className="h-4 w-4" /> {t("seller.boxes")}</TabsTrigger>
               <TabsTrigger value="orders" className="gap-1"><CheckCircle className="h-4 w-4" /> {t("seller.orders")}</TabsTrigger>
+              <TabsTrigger value="codes" className="gap-1"><Database className="h-4 w-4" /> {t("seller.productCodes")}</TabsTrigger>
             </TabsList>
 
+            {/* Products Tab */}
             <TabsContent value="products">
               <div className="flex justify-end mb-4">
                 <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
@@ -189,7 +237,7 @@ const SellerDashboard = () => {
                   <DialogContent>
                     <DialogHeader><DialogTitle>{t("seller.addProduct")}</DialogTitle></DialogHeader>
                     <div className="space-y-3">
-                      {pBarcode && <p className="text-sm text-muted-foreground">Barcode: {pBarcode}</p>}
+                      {pBarcode && <p className="text-sm text-muted-foreground">{t("seller.barcode")}: {pBarcode}</p>}
                       <div><Label>{t("auth.name")}</Label><Input value={pName} onChange={(e) => setPName(e.target.value)} /></div>
                       <div><Label>Description</Label><Input value={pDesc} onChange={(e) => setPDesc(e.target.value)} /></div>
                       <div className="grid grid-cols-2 gap-3">
@@ -227,6 +275,7 @@ const SellerDashboard = () => {
               )}
             </TabsContent>
 
+            {/* Boxes Tab */}
             <TabsContent value="boxes">
               <div className="flex justify-end mb-4">
                 <Dialog open={showAddBox} onOpenChange={setShowAddBox}>
@@ -272,6 +321,7 @@ const SellerDashboard = () => {
               )}
             </TabsContent>
 
+            {/* Orders Tab */}
             <TabsContent value="orders">
               {orders.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">{t("seller.noOrders")}</CardContent></Card>
@@ -296,6 +346,58 @@ const SellerDashboard = () => {
                             <Button size="sm" onClick={() => handleOrderStatus(o.id, "picked_up")}>{t("seller.markPickedUp")}</Button>
                           )}
                         </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Product Codes Tab */}
+            <TabsContent value="codes">
+              <div className="flex justify-end mb-4">
+                <Dialog open={showAddCode} onOpenChange={setShowAddCode}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2"><Plus className="h-4 w-4" /> {t("seller.addCode")}</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{t("seller.addCode")}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div><Label>{t("seller.barcode")}</Label><Input value={cBarcode} onChange={(e) => setCBarcode(e.target.value)} placeholder="1234567890123" /></div>
+                      <div><Label>{t("auth.name")}</Label><Input value={cName} onChange={(e) => setCName(e.target.value)} placeholder="Product name" /></div>
+                      <div><Label>Description</Label><Input value={cDesc} onChange={(e) => setCDesc(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><Label>Old Price</Label><Input type="number" value={cOldPrice} onChange={(e) => setCOldPrice(e.target.value)} /></div>
+                        <div><Label>New Price</Label><Input type="number" value={cNewPrice} onChange={(e) => setCNewPrice(e.target.value)} /></div>
+                      </div>
+                      <div><Label>Category</Label><Input value={cCategory} onChange={(e) => setCCategory(e.target.value)} /></div>
+                      <Button className="w-full" onClick={handleAddCode}>{t("common.save")}</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                {productCodes.length > 0
+                  ? "When you scan a barcode that matches a code below, the product form will auto-fill."
+                  : t("seller.noCodes")}
+              </p>
+
+              {productCodes.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">{t("seller.noCodes")}</CardContent></Card>
+              ) : (
+                <div className="space-y-3">
+                  {productCodes.map((c: any) => (
+                    <Card key={c.id}>
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-foreground">{c.name}</p>
+                          <p className="text-sm text-muted-foreground font-mono">{c.barcode}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {Number(c.old_price).toFixed(2)} → {Number(c.new_price).toFixed(2)} {t("common.lv")}
+                          </p>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteCode(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </CardContent>
                     </Card>
                   ))}
