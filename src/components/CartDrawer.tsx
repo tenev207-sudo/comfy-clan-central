@@ -72,7 +72,7 @@ const CartDrawer = () => {
             <div className="border-t border-border pt-4 mt-4 space-y-3">
               <div className="flex justify-between text-lg font-bold">
                 <span>Общо:</span>
-                <span className="text-primary">{total.toFixed(2)} лв.</span>
+                <span className="text-primary">{toEur(total)} €</span>
               </div>
               <Button className="w-full" size="lg" onClick={() => setOpen(false)}>
                 Към плащане

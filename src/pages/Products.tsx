@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart, type Product } from "@/contexts/CartContext";
+import { toEur } from "@/lib/utils";
 import ProductDetailDialog from "@/components/ProductDetailDialog";
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
