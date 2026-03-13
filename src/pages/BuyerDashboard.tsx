@@ -207,7 +207,7 @@ const BuyerDashboard = () => {
                     <div className="border-t border-border pt-4 mt-4 space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-foreground">{t("checkout.total")}:</span>
-                        <span className="text-xl font-bold text-primary">{totalPrice.toFixed(2)} {t("common.lv")}</span>
+                        <span className="text-xl font-bold text-primary">{toEur(totalPrice)} {t("common.lv")}</span>
                       </div>
                       <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
                         <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
