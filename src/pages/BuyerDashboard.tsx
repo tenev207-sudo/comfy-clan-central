@@ -193,7 +193,7 @@ const BuyerDashboard = () => {
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-foreground text-sm truncate">{item.title}</p>
                               <p className="text-xs text-muted-foreground">{item.shop}</p>
-                              <p className="text-sm font-bold text-primary mt-1">{Number(item.price).toFixed(2)} {t("common.lv")}</p>
+                              <p className="text-sm font-bold text-primary mt-1">{toEur(Number(item.price))} {t("common.lv")}</p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => removeFromSelection(item.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
