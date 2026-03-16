@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle, Database } from "lucide-react";
+import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle, Database, Zap, Handshake, Clock } from "lucide-react";
 import DeleteAccountButton from "@/components/DeleteAccountButton";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
@@ -22,12 +22,15 @@ const SellerDashboard = () => {
   const [boxes, setBoxes] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [productCodes, setProductCodes] = useState<any[]>([]);
+  const [b2bProducts, setB2bProducts] = useState<any[]>([]);
+  const [flashSales, setFlashSales] = useState<any[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showAddBox, setShowAddBox] = useState(false);
   const [showAddCode, setShowAddCode] = useState(false);
+  const [showFlashSale, setShowFlashSale] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
@@ -58,6 +61,14 @@ const SellerDashboard = () => {
   const [cNewPrice, setCNewPrice] = useState("");
   const [cCategory, setCCategory] = useState("general");
 
+  // Flash sale form
+  const [fTitle, setFTitle] = useState("");
+  const [fDesc, setFDesc] = useState("");
+  const [fOrigPrice, setFOrigPrice] = useState("");
+  const [fFlashPrice, setFFlashPrice] = useState("");
+  const [fQty, setFQty] = useState("1");
+  const [fExpiry, setFExpiry] = useState("");
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -73,16 +84,30 @@ const SellerDashboard = () => {
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
-    const [prodRes, boxRes, ordRes, codeRes] = await Promise.all([
+    const [prodRes, boxRes, ordRes, codeRes, flashRes] = await Promise.all([
       supabase.from("products").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
       supabase.from("surprise_boxes").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
       supabase.from("orders").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
       supabase.from("product_codes" as any).select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
+      supabase.from("flash_sales" as any).select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
     ]);
     if (prodRes.data) setProducts(prodRes.data);
     if (boxRes.data) setBoxes(boxRes.data);
     if (ordRes.data) setOrders(ordRes.data);
     if (codeRes.data) setProductCodes(codeRes.data as any[]);
+    if (flashRes.data) setFlashSales(flashRes.data as any[]);
+
+    // Fetch B2B products from OTHER sellers (near expiry within 48h, still in stock)
+    const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const { data: b2bData } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .neq("seller_id", userId)
+      .gt("stock", 0)
+      .lt("expiry_date", in48h)
+      .order("expiry_date", { ascending: true });
+    if (b2bData) setB2bProducts(b2bData);
   }, [userId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -149,14 +174,41 @@ const SellerDashboard = () => {
     fetchData();
   };
 
+  const handleCreateFlashSale = async () => {
+    if (!userId || !fTitle || !fOrigPrice || !fFlashPrice || !fExpiry) return;
+    const { error } = await supabase.from("flash_sales" as any).insert({
+      seller_id: userId,
+      title: fTitle,
+      description: fDesc || null,
+      original_price: parseFloat(fOrigPrice),
+      flash_price: parseFloat(fFlashPrice),
+      quantity: parseInt(fQty),
+      shop_name: profile?.shop_name || "My Shop",
+      shop_address: profile?.shop_address || null,
+      latitude: profile?.latitude || null,
+      longitude: profile?.longitude || null,
+      expires_at: new Date(fExpiry).toISOString(),
+      is_active: true,
+    } as any);
+    if (error) { toast({ title: t("auth.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("flash.created"), description: t("flash.createdDesc") });
+    setShowFlashSale(false);
+    setFTitle(""); setFDesc(""); setFOrigPrice(""); setFFlashPrice(""); setFQty("1"); setFExpiry("");
+    fetchData();
+  };
+
   const handleDeleteCode = async (id: string) => {
     await supabase.from("product_codes" as any).delete().eq("id", id);
     fetchData();
   };
 
+  const handleDeleteFlashSale = async (id: string) => {
+    await supabase.from("flash_sales" as any).delete().eq("id", id);
+    fetchData();
+  };
+
   const handleBarcodeScan = async (code: string) => {
     setShowScanner(false);
-    // Check if barcode exists in seller's product_codes table
     const match = productCodes.find((c: any) => c.barcode === code);
     if (match) {
       setPBarcode(code);
@@ -190,6 +242,24 @@ const SellerDashboard = () => {
     toast({ title: "✅", description: `Order updated to ${status}` });
   };
 
+  const handleB2bClaim = async (product: any) => {
+    if (!userId) return;
+    const { error } = await supabase.from("orders").insert({
+      buyer_id: userId,
+      seller_id: product.seller_id,
+      item_type: "b2b",
+      item_id: product.id,
+      quantity: product.stock,
+      total_price: product.new_price * product.stock * 0.7, // 30% wholesale discount
+      payment_method: "card" as any,
+      status: "pending" as any,
+      expires_at: product.expiry_date,
+    });
+    if (error) { toast({ title: t("auth.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("b2b.claimed"), description: t("b2b.claimedDesc") });
+    fetchData();
+  };
+
   const statusColor = (s: string) => {
     switch (s) {
       case "pending": return "bg-yellow-500/10 text-yellow-700";
@@ -202,6 +272,11 @@ const SellerDashboard = () => {
     }
   };
 
+  const getHoursUntilExpiry = (expiryDate: string) => {
+    const hours = Math.max(0, Math.round((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60)));
+    return hours;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -212,20 +287,45 @@ const SellerDashboard = () => {
               <h1 className="text-3xl font-bold text-foreground">{t("seller.title")}</h1>
               <p className="text-muted-foreground">{profile?.shop_name}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <DeleteAccountButton />
               <Button variant="outline" onClick={() => setShowScanner(true)} className="gap-2">
                 <QrCode className="h-4 w-4" /> {t("seller.scanBarcode")}
               </Button>
+              <Dialog open={showFlashSale} onOpenChange={setShowFlashSale}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <Zap className="h-4 w-4" /> {t("flash.button")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>{t("flash.create")}</DialogTitle></DialogHeader>
+                  <div className="space-y-3">
+                    <div><Label>Title</Label><Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="5 croissants left!" /></div>
+                    <div><Label>Description</Label><Input value={fDesc} onChange={(e) => setFDesc(e.target.value)} /></div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Original Price</Label><Input type="number" value={fOrigPrice} onChange={(e) => setFOrigPrice(e.target.value)} /></div>
+                      <div><Label>Flash Price</Label><Input type="number" value={fFlashPrice} onChange={(e) => setFFlashPrice(e.target.value)} /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Quantity</Label><Input type="number" value={fQty} onChange={(e) => setFQty(e.target.value)} /></div>
+                      <div><Label>Expires At</Label><Input type="datetime-local" value={fExpiry} onChange={(e) => setFExpiry(e.target.value)} /></div>
+                    </div>
+                    <Button className="w-full" onClick={handleCreateFlashSale}>{t("common.save")}</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
           <Tabs defaultValue="products">
-            <TabsList className="mb-6">
+            <TabsList className="mb-6 flex-wrap">
               <TabsTrigger value="products" className="gap-1"><Package className="h-4 w-4" /> {t("seller.products")}</TabsTrigger>
               <TabsTrigger value="boxes" className="gap-1"><ShoppingBag className="h-4 w-4" /> {t("seller.boxes")}</TabsTrigger>
               <TabsTrigger value="orders" className="gap-1"><CheckCircle className="h-4 w-4" /> {t("seller.orders")}</TabsTrigger>
               <TabsTrigger value="codes" className="gap-1"><Database className="h-4 w-4" /> {t("seller.productCodes")}</TabsTrigger>
+              <TabsTrigger value="b2b" className="gap-1"><Handshake className="h-4 w-4" /> {t("b2b.title")}</TabsTrigger>
+              <TabsTrigger value="flash" className="gap-1"><Zap className="h-4 w-4" /> {t("flash.active")}</TabsTrigger>
             </TabsList>
 
             {/* Products Tab */}
@@ -339,6 +439,7 @@ const SellerDashboard = () => {
                           <Badge className={statusColor(o.status)}>{o.status}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method}</p>
+                        {o.item_type === "b2b" && <Badge variant="outline" className="mt-1">B2B</Badge>}
                         <div className="flex gap-2 mt-3">
                           {o.status === "paid" && (
                             <Button size="sm" onClick={() => handleOrderStatus(o.id, "ready")}>{t("seller.markReady")}</Button>
@@ -399,6 +500,75 @@ const SellerDashboard = () => {
                           </p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteCode(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* B2B Market Tab */}
+            <TabsContent value="b2b">
+              <p className="text-sm text-muted-foreground mb-4">{t("b2b.desc")}</p>
+              {b2bProducts.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">{t("b2b.noItems")}</CardContent></Card>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {b2bProducts.map((p) => (
+                    <motion.div key={p.id} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
+                      <Card className="overflow-hidden border-2 border-accent/30 hover:border-accent/60 transition-colors">
+                        <div className="bg-gradient-to-r from-accent/20 to-primary/20 p-3 flex items-center justify-between">
+                          <Badge variant="outline" className="bg-accent/10 text-accent-foreground border-accent/30">
+                            <Handshake className="h-3 w-3 mr-1" /> B2B
+                          </Badge>
+                          <Badge variant="secondary" className="gap-1">
+                            <Clock className="h-3 w-3" /> {getHoursUntilExpiry(p.expiry_date)}h
+                          </Badge>
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="font-bold text-foreground mb-1">{p.name}</h3>
+                          <p className="text-sm text-muted-foreground mb-1">{p.shop}</p>
+                          <p className="text-xs text-muted-foreground mb-3">{p.stock} {t("common.pieces")} • {t("b2b.expiresIn")} {getHoursUntilExpiry(p.expiry_date)} {t("b2b.hours")}</p>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(p.new_price))}</span>
+                              <span className="text-lg font-bold text-accent">{toEur(Number(p.new_price) * 0.7)} {t("common.lv")}</span>
+                              <span className="text-xs text-muted-foreground ml-1">/{t("common.pieces")}</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleB2bClaim(p)} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                              {t("b2b.claim")}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Flash Sales Tab */}
+            <TabsContent value="flash">
+              <p className="text-sm text-muted-foreground mb-4">{t("flash.active")}</p>
+              {flashSales.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">{t("flash.noItems")}</CardContent></Card>
+              ) : (
+                <div className="space-y-3">
+                  {flashSales.map((f: any) => (
+                    <Card key={f.id} className="border-accent/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Zap className="h-4 w-4 text-accent" />
+                            <p className="font-semibold text-foreground">{f.title}</p>
+                            {f.is_active && <Badge className="bg-accent/10 text-accent border-accent/30">Active</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {toEur(Number(f.original_price))} → {toEur(Number(f.flash_price))} {t("common.lv")} • {f.quantity} {t("common.pieces")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{t("flash.expiresAt")}: {new Date(f.expires_at).toLocaleString()}</p>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteFlashSale(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </CardContent>
                     </Card>
                   ))}
