@@ -46,6 +46,57 @@ export type Database = {
           },
         ]
       }
+      flash_sales: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string
+          flash_price: number
+          id: string
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          original_price: number
+          quantity: number
+          seller_id: string
+          shop_address: string | null
+          shop_name: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at: string
+          flash_price?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          original_price?: number
+          quantity?: number
+          seller_id: string
+          shop_address?: string | null
+          shop_name: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          flash_price?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          original_price?: number
+          quantity?: number
+          seller_id?: string
+          shop_address?: string | null
+          shop_name?: string
+          title?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           buyer_id: string
