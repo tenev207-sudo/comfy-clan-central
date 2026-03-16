@@ -191,6 +191,38 @@ const translations = {
   "seller.codeAdded": { bg: "Кодът е добавен!", en: "Code added!" },
   "seller.codeFound": { bg: "Продуктът е разпознат!", en: "Product recognized!" },
 
+  // B2B Trading
+  "b2b.title": { bg: "B2B Пазар", en: "B2B Market" },
+  "b2b.desc": { bg: "Продукти от други магазини с наближаващ срок – купете на едро преди да се развалят.", en: "Products from other shops nearing expiry – buy wholesale before they go bad." },
+  "b2b.noItems": { bg: "Няма налични B2B оферти от други магазини.", en: "No B2B offers from other shops right now." },
+  "b2b.claim": { bg: "Поръчай на едро", en: "Claim Wholesale" },
+  "b2b.claimed": { bg: "Поръчката е създадена!", en: "Wholesale order created!" },
+  "b2b.claimedDesc": { bg: "Свържете се с магазина за предаване.", en: "Contact the shop for handover." },
+  "b2b.expiresIn": { bg: "Изтича след", en: "Expires in" },
+  "b2b.hours": { bg: "часа", en: "hours" },
+  "b2b.wholesalePrice": { bg: "Едро цена", en: "Wholesale" },
+
+  // Flash Sales
+  "flash.title": { bg: "⚡ Светкавични оферти", en: "⚡ Flash Sales" },
+  "flash.button": { bg: "⚡ Светкавична оферта", en: "⚡ Flash Sale" },
+  "flash.create": { bg: "Създай Flash Sale", en: "Create Flash Sale" },
+  "flash.noItems": { bg: "Няма активни светкавични оферти.", en: "No active flash sales right now." },
+  "flash.active": { bg: "Активни Flash Sales", en: "Active Flash Sales" },
+  "flash.new": { bg: "Нова оферта наблизо!", en: "New deal nearby!" },
+  "flash.expiresAt": { bg: "Валидна до", en: "Valid until" },
+  "flash.grab": { bg: "Вземи сега", en: "Grab Now" },
+  "flash.created": { bg: "Flash Sale създадена!", en: "Flash Sale created!" },
+  "flash.createdDesc": { bg: "Купувачите наблизо ще бъдат уведомени.", en: "Nearby buyers will be notified." },
+
+  // Community Bundles (Street Boxes)
+  "bundle.title": { bg: "🏘️ Улични кутии", en: "🏘️ Street Boxes" },
+  "bundle.desc": { bg: "Комбинирани продукти от близки магазини на една улица.", en: "Combined products from nearby shops on the same street." },
+  "bundle.noItems": { bg: "Няма налични улични кутии в момента.", en: "No street boxes available right now." },
+  "bundle.shops": { bg: "магазина", en: "shops" },
+  "bundle.items": { bg: "артикула", en: "items" },
+  "bundle.savings": { bg: "Спестяваш", en: "You save" },
+  "bundle.reserveAll": { bg: "Резервирай цялата кутия", en: "Reserve Entire Box" },
+
   // Common
   "common.save": { bg: "Запази", en: "Save" },
   "common.cancel": { bg: "Отказ", en: "Cancel" },
