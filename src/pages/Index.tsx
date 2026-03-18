@@ -110,9 +110,13 @@ const Index = () => {
               {boxes.map((b, i) => (
                 <motion.div key={b.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                   <Card className="overflow-hidden group hover:shadow-xl transition-all duration-300 border hover:border-primary/30">
-                    <div className="bg-gradient-to-r from-primary to-accent h-32 flex items-center justify-center">
-                      <ShoppingBag className="h-14 w-14 text-primary-foreground" />
-                    </div>
+                    {b.image_url ? (
+                      <img src={b.image_url} alt={b.title} className="h-32 w-full object-cover" />
+                    ) : (
+                      <div className="bg-gradient-to-r from-primary to-accent h-32 flex items-center justify-center">
+                        <ShoppingBag className="h-14 w-14 text-primary-foreground" />
+                      </div>
+                    )}
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-bold text-foreground">{b.title}</h3>
