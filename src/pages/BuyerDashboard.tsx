@@ -34,7 +34,6 @@ interface SellerShop {
   longitude: number | null;
 }
 
-// Haversine distance in meters
 function getDistanceM(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -97,7 +96,6 @@ const BuyerDashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime flash sale notifications
   useEffect(() => {
     const channel = supabase
       .channel("flash-sales-realtime")
@@ -105,7 +103,6 @@ const BuyerDashboard = () => {
         const newSale = payload.new as any;
         setFlashNotification(newSale);
         setFlashSales((prev) => [newSale, ...prev]);
-        // Auto-dismiss after 10s
         setTimeout(() => setFlashNotification(null), 10000);
       })
       .subscribe();
@@ -113,14 +110,12 @@ const BuyerDashboard = () => {
   }, []);
 
   const addToSelection = (item: any, type: "surprise_box" | "product" | "flash_sale") => {
-    const exists = selectedItems.find(s => s.id === item.id);
-    if (exists) {
+    if (selectedItems.find(s => s.id === item.id)) {
       toast({ title: t("buyer.alreadyAdded"), description: t("buyer.alreadyAddedDesc") });
       return;
     }
     const newItem: SelectedItem = {
-      id: item.id,
-      type,
+      id: item.id, type,
       title: type === "surprise_box" ? item.title : (type === "flash_sale" ? item.title : item.name),
       shop: type === "surprise_box" ? item.shop_name : (type === "flash_sale" ? item.shop_name : item.shop),
       price: type === "surprise_box" ? item.price : (type === "flash_sale" ? item.flash_price : item.new_price),
@@ -131,10 +126,7 @@ const BuyerDashboard = () => {
     toast({ title: "✅", description: `${newItem.title} ${t("buyer.addedToCart")}` });
   };
 
-  const removeFromSelection = (id: string) => {
-    setSelectedItems(prev => prev.filter(s => s.id !== id));
-  };
-
+  const removeFromSelection = (id: string) => setSelectedItems(prev => prev.filter(s => s.id !== id));
   const totalPrice = selectedItems.reduce((sum, s) => sum + Number(s.price), 0);
 
   const handleConfirmOrder = async () => {
@@ -145,12 +137,8 @@ const BuyerDashboard = () => {
         const sellerId = item.data.seller_id;
         if (!sellerId) throw new Error("Seller not found");
         const { error } = await supabase.from("orders").insert({
-          buyer_id: userId,
-          seller_id: sellerId,
-          item_type: item.type,
-          item_id: item.id,
-          quantity: 1,
-          total_price: item.price,
+          buyer_id: userId, seller_id: sellerId, item_type: item.type, item_id: item.id,
+          quantity: 1, total_price: item.price,
           payment_method: paymentMethod as any,
           status: paymentMethod === "cash" ? "pending" : "paid",
           expires_at: item.type === "surprise_box" ? item.data.pickup_end : (item.type === "flash_sale" ? item.data.expires_at : item.data.expiry_date),
@@ -173,9 +161,7 @@ const BuyerDashboard = () => {
       fetchData();
     } catch (err: any) {
       toast({ title: t("auth.error"), description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const statusColor = (s: string) => {
@@ -192,53 +178,36 @@ const BuyerDashboard = () => {
   const filteredProducts = filterShop ? products.filter(p => p.shop === filterShop) : products;
   const filteredBoxes = filterShop ? boxes.filter(b => b.shop_name === filterShop) : boxes;
 
-  const handleShopClick = (shopName: string) => {
-    setFilterShop(shopName);
-    setActiveTab("products");
-  };
+  const handleShopClick = (shopName: string) => { setFilterShop(shopName); setActiveTab("products"); };
 
-  // Build Community Bundles (Street Boxes) by grouping nearby sellers (within 500m)
   const streetBundles: StreetBundle[] = (() => {
     const sellersWithCoords = sellers.filter(s => s.latitude && s.longitude);
     const used = new Set<string>();
     const bundles: StreetBundle[] = [];
-
     for (const seller of sellersWithCoords) {
       if (used.has(seller.user_id)) continue;
       const nearby = sellersWithCoords.filter(
         s => s.user_id !== seller.user_id && !used.has(s.user_id) &&
           getDistanceM(seller.latitude!, seller.longitude!, s.latitude!, s.longitude!) <= 500
       );
-      if (nearby.length === 0) continue; // Need at least 2 shops
-
+      if (nearby.length === 0) continue;
       const group = [seller, ...nearby];
       group.forEach(s => used.add(s.user_id));
-
       const groupProducts = products.filter(p =>
         group.some(s => p.seller_id === s.user_id || p.shop === s.shop_name) && p.stock > 0
       );
       if (groupProducts.length === 0) continue;
-
-      const totalOld = groupProducts.reduce((sum, p) => sum + Number(p.old_price), 0);
-      const totalNew = groupProducts.reduce((sum, p) => sum + Number(p.new_price), 0);
-
       bundles.push({
-        id: group.map(s => s.user_id).join("-"),
-        shops: group,
-        products: groupProducts,
-        totalOldPrice: totalOld,
-        totalNewPrice: totalNew,
+        id: group.map(s => s.user_id).join("-"), shops: group, products: groupProducts,
+        totalOldPrice: groupProducts.reduce((sum, p) => sum + Number(p.old_price), 0),
+        totalNewPrice: groupProducts.reduce((sum, p) => sum + Number(p.new_price), 0),
         centerAddress: seller.shop_address || seller.shop_name || "Nearby shops",
       });
     }
     return bundles;
   })();
 
-  const handleReserveBundle = (bundle: StreetBundle) => {
-    for (const p of bundle.products) {
-      addToSelection(p, "product");
-    }
-  };
+  const handleReserveBundle = (bundle: StreetBundle) => { bundle.products.forEach(p => addToSelection(p, "product")); };
 
   return (
     <div className="min-h-screen bg-background">
@@ -248,33 +217,29 @@ const BuyerDashboard = () => {
       <AnimatePresence>
         {flashNotification && (
           <motion.div
-            initial={{ y: -80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -80, opacity: 0 }}
+            initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
             className="fixed top-16 left-0 right-0 z-50 px-4 pt-2"
           >
-            <div className="container mx-auto">
+            <div className="container mx-auto max-w-lg">
               <Card className="border-2 border-accent bg-accent/5 shadow-lg">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center">
-                      <Zap className="h-5 w-5 text-accent" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">{t("flash.new")} {flashNotification.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {flashNotification.shop_name} • {toEur(Number(flashNotification.flash_price))} {t("common.lv")}
-                      </p>
-                    </div>
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                    <Zap className="h-4 w-4 text-accent" />
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => {
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-foreground text-sm truncate">{t("flash.new")} {flashNotification.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {flashNotification.shop_name} • {toEur(Number(flashNotification.flash_price))} €
+                    </p>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground text-xs h-7 px-2" onClick={() => {
                       addToSelection(flashNotification, "flash_sale");
                       setFlashNotification(null);
                     }}>
                       {t("flash.grab")}
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setFlashNotification(null)}>✕</Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setFlashNotification(null)}>✕</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -285,15 +250,16 @@ const BuyerDashboard = () => {
 
       <div className="container mx-auto px-4 pt-20 pb-12">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-foreground">{t("buyer.title")}</h1>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("buyer.title")}</h1>
             <div className="flex items-center gap-2">
               <DeleteAccountButton />
               <Sheet open={cartOpen} onOpenChange={setCartOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="gap-2 relative">
+                  <Button variant="outline" size="sm" className="gap-1.5 relative">
                     <ShoppingCart className="h-4 w-4" />
-                    {t("buyer.mySelection")}
+                    <span className="hidden sm:inline">{t("buyer.mySelection")}</span>
                     {selectedItems.length > 0 && (
                       <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
                         {selectedItems.length}
@@ -301,26 +267,26 @@ const BuyerDashboard = () => {
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full sm:w-[420px] flex flex-col">
+                <SheetContent side="right" className="w-full sm:w-[400px] flex flex-col">
                   <SheetHeader>
                     <SheetTitle>{t("buyer.mySelection")} ({selectedItems.length})</SheetTitle>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto mt-4 space-y-3">
                     {selectedItems.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground">
-                        <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                        <p>{t("buyer.emptySelection")}</p>
+                        <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">{t("buyer.emptySelection")}</p>
                       </div>
                     ) : (
                       selectedItems.map((item) => (
                         <Card key={item.id}>
-                          <CardContent className="p-3 flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
+                          <CardContent className="p-3 flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
                               <p className="font-semibold text-foreground text-sm truncate">{item.title}</p>
-                              <p className="text-xs text-muted-foreground">{item.shop}</p>
-                              <p className="text-sm font-bold text-primary mt-1">{toEur(Number(item.price))} {t("common.lv")}</p>
+                              <p className="text-xs text-muted-foreground truncate">{item.shop}</p>
+                              <p className="text-sm font-bold text-primary mt-0.5">{toEur(Number(item.price))} €</p>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => removeFromSelection(item.id)}>
+                            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => removeFromSelection(item.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </CardContent>
@@ -329,26 +295,26 @@ const BuyerDashboard = () => {
                     )}
                   </div>
                   {selectedItems.length > 0 && (
-                    <div className="border-t border-border pt-4 mt-4 space-y-4">
+                    <div className="border-t border-border pt-4 mt-4 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="font-semibold text-foreground">{t("checkout.total")}:</span>
-                        <span className="text-xl font-bold text-primary">{toEur(totalPrice)} {t("common.lv")}</span>
+                        <span className="font-semibold text-foreground text-sm">{t("checkout.total")}:</span>
+                        <span className="text-lg font-bold text-primary">{toEur(totalPrice)} €</span>
                       </div>
                       <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
-                        <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                        <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:border-primary/30 transition-colors">
                           <RadioGroupItem value="card" id="card-pay" />
-                          <Label htmlFor="card-pay" className="flex items-center gap-2 cursor-pointer flex-1">
+                          <Label htmlFor="card-pay" className="flex items-center gap-2 cursor-pointer flex-1 text-sm">
                             <CreditCard className="h-4 w-4 text-primary" /> {t("checkout.payCard")}
                           </Label>
                         </div>
-                        <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                        <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:border-primary/30 transition-colors">
                           <RadioGroupItem value="cash" id="cash-pay" />
-                          <Label htmlFor="cash-pay" className="flex items-center gap-2 cursor-pointer flex-1">
+                          <Label htmlFor="cash-pay" className="flex items-center gap-2 cursor-pointer flex-1 text-sm">
                             <Banknote className="h-4 w-4 text-primary" /> {t("checkout.payCash")}
                           </Label>
                         </div>
                       </RadioGroup>
-                      <Button className="w-full" size="lg" onClick={handleConfirmOrder} disabled={loading}>
+                      <Button className="w-full" onClick={handleConfirmOrder} disabled={loading}>
                         {loading ? t("auth.loading") : t("checkout.confirm")}
                       </Button>
                     </div>
@@ -359,20 +325,20 @@ const BuyerDashboard = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === "markets") setFilterShop(null); }}>
-            <TabsList className="mb-6 flex-wrap">
-              <TabsTrigger value="markets" className="gap-1"><Store className="h-4 w-4" /> {t("buyer.allMarkets")}</TabsTrigger>
-              <TabsTrigger value="products" className="gap-1"><Package className="h-4 w-4" /> {t("buyer.products")}</TabsTrigger>
-              <TabsTrigger value="boxes" className="gap-1"><ShoppingBag className="h-4 w-4" /> {t("buyer.surpriseBoxes")}</TabsTrigger>
-              <TabsTrigger value="flash" className="gap-1 relative">
-                <Zap className="h-4 w-4" /> {t("flash.title")}
+            <TabsList className="mb-6 flex flex-wrap h-auto gap-1">
+              <TabsTrigger value="markets" className="gap-1 text-xs sm:text-sm"><Store className="h-3.5 w-3.5" /> {t("buyer.allMarkets")}</TabsTrigger>
+              <TabsTrigger value="products" className="gap-1 text-xs sm:text-sm"><Package className="h-3.5 w-3.5" /> {t("buyer.products")}</TabsTrigger>
+              <TabsTrigger value="boxes" className="gap-1 text-xs sm:text-sm"><ShoppingBag className="h-3.5 w-3.5" /> {t("buyer.surpriseBoxes")}</TabsTrigger>
+              <TabsTrigger value="flash" className="gap-1 text-xs sm:text-sm relative">
+                <Zap className="h-3.5 w-3.5" /> Flash
                 {flashSales.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent text-accent-foreground text-[10px] flex items-center justify-center">
+                  <span className="ml-1 h-4 w-4 rounded-full bg-accent text-accent-foreground text-[10px] inline-flex items-center justify-center">
                     {flashSales.length}
                   </span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="bundles" className="gap-1"><Users className="h-4 w-4" /> {t("bundle.title")}</TabsTrigger>
-              <TabsTrigger value="orders" className="gap-1"><ClipboardList className="h-4 w-4" /> {t("buyer.myOrders")}</TabsTrigger>
+              <TabsTrigger value="bundles" className="gap-1 text-xs sm:text-sm"><Users className="h-3.5 w-3.5" /> Bundles</TabsTrigger>
+              <TabsTrigger value="orders" className="gap-1 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5" /> {t("buyer.myOrders")}</TabsTrigger>
             </TabsList>
 
             {/* Markets Tab */}
@@ -380,27 +346,26 @@ const BuyerDashboard = () => {
               {sellers.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">{t("buyer.noProducts")}</CardContent></Card>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {sellers.map((s) => {
                     const shopProducts = products.filter(p => p.seller_id === s.user_id || p.shop === s.shop_name);
                     const shopBoxes = boxes.filter(b => b.seller_id === s.user_id || b.shop_name === s.shop_name);
                     const totalItems = shopProducts.length + shopBoxes.length;
                     return (
-                      <motion.div key={s.user_id} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-                        <Card className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer" onClick={() => handleShopClick(s.shop_name!)}>
-                          <div className="bg-gradient-to-r from-primary to-accent h-24 flex items-center justify-center">
-                            <Store className="h-10 w-10 text-primary-foreground" />
+                      <motion.div key={s.user_id} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+                        <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full" onClick={() => handleShopClick(s.shop_name!)}>
+                          <div className="bg-gradient-to-r from-primary to-accent h-16 flex items-center justify-center">
+                            <Store className="h-7 w-7 text-primary-foreground" />
                           </div>
-                          <CardContent className="p-4">
-                            <h3 className="font-bold text-foreground text-lg">{s.shop_name}</h3>
+                          <CardContent className="p-3">
+                            <h3 className="font-bold text-foreground text-sm truncate">{s.shop_name}</h3>
                             {s.shop_address && (
-                              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                                <MapPin className="h-3 w-3" /> {s.shop_address}
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                <MapPin className="h-3 w-3 shrink-0" /> {s.shop_address}
                               </p>
                             )}
-                            <div className="flex items-center justify-between mt-3">
-                              <Badge variant="secondary">{totalItems} {t("buyer.products").toLowerCase()}</Badge>
-                              <Button size="sm" variant="outline">{t("buyer.viewProducts")}</Button>
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">{totalItems} items</Badge>
                             </div>
                           </CardContent>
                         </Card>
@@ -415,26 +380,32 @@ const BuyerDashboard = () => {
             <TabsContent value="products">
               {filterShop && (
                 <div className="flex items-center gap-2 mb-4">
-                  <Badge variant="outline" className="text-sm px-3 py-1">{filterShop}</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => setFilterShop(null)}>{t("buyer.allProducts")}</Button>
+                  <Badge variant="outline" className="text-xs px-2 py-1">{filterShop}</Badge>
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setFilterShop(null)}>{t("buyer.allProducts")}</Button>
                 </div>
               )}
               {filteredProducts.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">{t("buyer.noProducts")}</CardContent></Card>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {filteredProducts.map((p) => (
                     <Card key={p.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4">
-                        <h3 className="font-bold text-foreground mb-1">{p.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-1">{p.shop}</p>
-                        <p className="text-sm text-muted-foreground mb-3">{p.description}</p>
-                        <div className="flex items-center justify-between">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="w-full h-28 sm:h-36 object-cover" />
+                      ) : (
+                        <div className="w-full h-28 sm:h-36 bg-muted flex items-center justify-center">
+                          <Package className="h-8 w-8 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <CardContent className="p-3">
+                        <p className="text-xs text-muted-foreground truncate mb-0.5">{p.shop}</p>
+                        <h3 className="font-semibold text-foreground text-sm truncate mb-2">{p.name}</h3>
+                        <div className="flex items-end justify-between gap-1">
                           <div>
-                            <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(p.old_price))}</span>
-                            <span className="text-lg font-bold text-primary">{toEur(Number(p.new_price))} {t("common.lv")}</span>
+                            <span className="text-[10px] line-through text-muted-foreground block">{toEur(Number(p.old_price))} €</span>
+                            <span className="text-sm font-bold text-primary">{toEur(Number(p.new_price))} €</span>
                           </div>
-                          <Button size="sm" onClick={() => addToSelection(p, "product")} disabled={p.stock <= 0}>
+                          <Button size="sm" className="h-7 text-xs px-2" onClick={() => addToSelection(p, "product")} disabled={p.stock <= 0}>
                             {t("buyer.reserve")}
                           </Button>
                         </div>
@@ -449,38 +420,42 @@ const BuyerDashboard = () => {
             <TabsContent value="boxes">
               {filterShop && (
                 <div className="flex items-center gap-2 mb-4">
-                  <Badge variant="outline" className="text-sm px-3 py-1">{filterShop}</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => setFilterShop(null)}>{t("buyer.allProducts")}</Button>
+                  <Badge variant="outline" className="text-xs px-2 py-1">{filterShop}</Badge>
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setFilterShop(null)}>{t("buyer.allProducts")}</Button>
                 </div>
               )}
               {filteredBoxes.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">{t("buyer.noBoxes")}</CardContent></Card>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {filteredBoxes.map((b) => (
-                    <motion.div key={b.id} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-shadow">
-                        <div className="bg-gradient-to-r from-primary to-accent h-28 flex items-center justify-center">
-                          <ShoppingBag className="h-12 w-12 text-primary-foreground" />
-                        </div>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-bold text-foreground">{b.title}</h3>
-                            <Badge variant="secondary">{b.quantity} {t("buyer.left")}</Badge>
+                    <motion.div key={b.id} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                        {b.image_url ? (
+                          <img src={b.image_url} alt={b.title} className="w-full h-28 sm:h-36 object-cover" />
+                        ) : (
+                          <div className="bg-gradient-to-r from-primary to-accent h-28 sm:h-36 flex items-center justify-center">
+                            <ShoppingBag className="h-10 w-10 text-primary-foreground" />
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">{b.description}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                            <MapPin className="h-3 w-3" /> {b.shop_name} {b.shop_address && `• ${b.shop_address}`}
+                        )}
+                        <CardContent className="p-3">
+                          <div className="flex items-start justify-between gap-1 mb-1">
+                            <h3 className="font-bold text-foreground text-sm truncate">{b.title}</h3>
+                            <Badge variant="secondary" className="text-[10px] shrink-0">{b.quantity}</Badge>
+                          </div>
+                          {b.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-1">{b.description}</p>}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1 truncate">
+                            <MapPin className="h-3 w-3 shrink-0" /> {b.shop_name}
                           </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
-                            <Clock className="h-3 w-3" /> {t("buyer.pickupWindow")}: {format(new Date(b.pickup_start), "HH:mm")} - {format(new Date(b.pickup_end), "HH:mm")}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                            <Clock className="h-3 w-3 shrink-0" /> {format(new Date(b.pickup_start), "HH:mm")} - {format(new Date(b.pickup_end), "HH:mm")}
                           </p>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-end justify-between gap-1">
                             <div>
-                              <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(b.original_value))}</span>
-                              <span className="text-lg font-bold text-primary">{toEur(Number(b.price))} {t("common.lv")}</span>
+                              <span className="text-[10px] line-through text-muted-foreground block">{toEur(Number(b.original_value))} €</span>
+                              <span className="text-sm font-bold text-primary">{toEur(Number(b.price))} €</span>
                             </div>
-                            <Button size="sm" onClick={() => addToSelection(b, "surprise_box")} disabled={b.quantity <= 0}>
+                            <Button size="sm" className="h-7 text-xs px-2" onClick={() => addToSelection(b, "surprise_box")} disabled={b.quantity <= 0}>
                               {t("buyer.reserve")}
                             </Button>
                           </div>
@@ -494,39 +469,36 @@ const BuyerDashboard = () => {
 
             {/* Flash Sales Tab */}
             <TabsContent value="flash">
-              <p className="text-sm text-muted-foreground mb-4">{t("flash.title")} – {t("flash.noItems").replace("No active flash sales right now.", "").replace("Няма активни светкавични оферти.", "")}</p>
               {flashSales.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">{t("flash.noItems")}</CardContent></Card>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {flashSales.map((f: any) => (
                     <motion.div key={f.id} whileHover={{ scale: 1.02 }} transition={{ duration: 0.15 }}>
                       <Card className="overflow-hidden border-2 border-accent/40 hover:border-accent transition-colors">
-                        <div className="bg-gradient-to-r from-accent to-accent/60 p-4 flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-background/20 flex items-center justify-center">
-                            <Zap className="h-5 w-5 text-accent-foreground" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-accent-foreground">{f.title}</p>
-                            <p className="text-xs text-accent-foreground/80">{f.shop_name}</p>
+                        <div className="bg-gradient-to-r from-accent to-accent/60 p-3 flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-accent-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-bold text-accent-foreground text-sm truncate">{f.title}</p>
+                            <p className="text-xs text-accent-foreground/80 truncate">{f.shop_name}</p>
                           </div>
                         </div>
-                        <CardContent className="p-4">
-                          {f.description && <p className="text-sm text-muted-foreground mb-2">{f.description}</p>}
+                        <CardContent className="p-3">
+                          {f.description && <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{f.description}</p>}
                           {f.shop_address && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                              <MapPin className="h-3 w-3" /> {f.shop_address}
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1 truncate">
+                              <MapPin className="h-3 w-3 shrink-0" /> {f.shop_address}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
-                            <Clock className="h-3 w-3" /> {t("flash.expiresAt")}: {format(new Date(f.expires_at), "HH:mm")}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                            <Clock className="h-3 w-3 shrink-0" /> {format(new Date(f.expires_at), "HH:mm")}
                           </p>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-end justify-between gap-1">
                             <div>
-                              <span className="text-xs line-through text-muted-foreground mr-1">{toEur(Number(f.original_price))}</span>
-                              <span className="text-lg font-bold text-accent">{toEur(Number(f.flash_price))} {t("common.lv")}</span>
+                              <span className="text-[10px] line-through text-muted-foreground block">{toEur(Number(f.original_price))} €</span>
+                              <span className="text-sm font-bold text-accent">{toEur(Number(f.flash_price))} €</span>
                             </div>
-                            <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => addToSelection(f, "flash_sale")} disabled={f.quantity <= 0}>
+                            <Button size="sm" className="h-7 text-xs px-2 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => addToSelection(f, "flash_sale")} disabled={f.quantity <= 0}>
                               {t("flash.grab")}
                             </Button>
                           </div>
@@ -538,7 +510,7 @@ const BuyerDashboard = () => {
               )}
             </TabsContent>
 
-            {/* Community Bundles (Street Boxes) Tab */}
+            {/* Community Bundles Tab */}
             <TabsContent value="bundles">
               <p className="text-sm text-muted-foreground mb-4">{t("bundle.desc")}</p>
               {streetBundles.length === 0 ? (
@@ -550,38 +522,37 @@ const BuyerDashboard = () => {
                     return (
                       <motion.div key={bundle.id} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
                         <Card className="overflow-hidden border-2 border-primary/20 hover:border-primary/50 transition-colors">
-                          <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Users className="h-5 w-5 text-primary" />
-                              <h3 className="font-bold text-foreground">{t("bundle.title")}</h3>
+                          <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Users className="h-4 w-4 text-primary shrink-0" />
+                              <h3 className="font-bold text-foreground text-sm">{t("bundle.title")}</h3>
                             </div>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {bundle.centerAddress}
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                              <MapPin className="h-3 w-3 shrink-0" /> {bundle.centerAddress}
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Badge variant="secondary">{bundle.shops.length} {t("bundle.shops")}</Badge>
-                              <Badge variant="secondary">{bundle.products.length} {t("bundle.items")}</Badge>
+                              <Badge variant="secondary" className="text-xs">{bundle.shops.length} {t("bundle.shops")}</Badge>
+                              <Badge variant="secondary" className="text-xs">{bundle.products.length} {t("bundle.items")}</Badge>
                             </div>
                           </div>
-                          <CardContent className="p-4">
-                            <div className="space-y-2 mb-3">
-                              {bundle.products.slice(0, 4).map((p) => (
-                                <div key={p.id} className="flex items-center justify-between text-sm">
-                                  <span className="text-foreground truncate flex-1">{p.name}</span>
-                                  <span className="text-muted-foreground ml-2">{p.shop}</span>
-                                  <span className="font-semibold text-primary ml-2">{toEur(Number(p.new_price))} {t("common.lv")}</span>
+                          <CardContent className="p-3">
+                            <div className="space-y-1.5 mb-3">
+                              {bundle.products.slice(0, 3).map((p) => (
+                                <div key={p.id} className="flex items-center justify-between text-xs gap-2">
+                                  <span className="text-foreground truncate">{p.name}</span>
+                                  <span className="font-semibold text-primary shrink-0">{toEur(Number(p.new_price))} €</span>
                                 </div>
                               ))}
-                              {bundle.products.length > 4 && (
-                                <p className="text-xs text-muted-foreground">+{bundle.products.length - 4} more...</p>
+                              {bundle.products.length > 3 && (
+                                <p className="text-xs text-muted-foreground">+{bundle.products.length - 3} more...</p>
                               )}
                             </div>
-                            <div className="border-t border-border pt-3 flex items-center justify-between">
+                            <div className="border-t border-border pt-2 flex items-center justify-between">
                               <div>
-                                <p className="text-xs text-muted-foreground">{t("bundle.savings")}: <span className="font-bold text-primary">{toEur(savings)} {t("common.lv")}</span></p>
-                                <p className="text-lg font-bold text-foreground">{toEur(bundle.totalNewPrice)} {t("common.lv")}</p>
+                                <p className="text-xs text-muted-foreground">Save <span className="font-bold text-primary">{toEur(savings)} €</span></p>
+                                <p className="text-sm font-bold text-foreground">{toEur(bundle.totalNewPrice)} €</p>
                               </div>
-                              <Button size="sm" onClick={() => handleReserveBundle(bundle)}>
+                              <Button size="sm" className="h-7 text-xs" onClick={() => handleReserveBundle(bundle)}>
                                 {t("bundle.reserveAll")}
                               </Button>
                             </div>
@@ -603,19 +574,19 @@ const BuyerDashboard = () => {
                   {orders.map((o) => (
                     <Card key={o.id}>
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold text-foreground">{o.order_number}</p>
-                          <div className="flex gap-2">
-                            {o.item_type === "b2b" && <Badge variant="outline">B2B</Badge>}
-                            {o.item_type === "flash_sale" && <Badge variant="outline" className="border-accent text-accent">⚡</Badge>}
-                            <Badge className={statusColor(o.status)}>{o.status}</Badge>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <p className="font-semibold text-foreground text-sm truncate">{o.order_number}</p>
+                          <div className="flex gap-1 shrink-0">
+                            {o.item_type === "b2b" && <Badge variant="outline" className="text-xs">B2B</Badge>}
+                            {o.item_type === "flash_sale" && <Badge variant="outline" className="border-accent text-accent text-xs">⚡</Badge>}
+                            <Badge className={`${statusColor(o.status)} text-xs`}>{o.status}</Badge>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">{toEur(Number(o.total_price))} {t("common.lv")} • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
+                        <p className="text-xs text-muted-foreground">{toEur(Number(o.total_price))} € • {o.payment_method === "card" ? t("checkout.payCard") : t("checkout.payCash")}</p>
                         {(o.status === "paid" || o.status === "ready") && (
-                          <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
-                            <p className="text-sm text-muted-foreground">{t("buyer.pickupCode")}</p>
-                            <p className="text-2xl font-mono font-bold text-primary tracking-wider">{o.pickup_code}</p>
+                          <div className="mt-3 p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-center">
+                            <p className="text-xs text-muted-foreground">{t("buyer.pickupCode")}</p>
+                            <p className="text-xl font-mono font-bold text-primary tracking-wider">{o.pickup_code}</p>
                           </div>
                         )}
                       </CardContent>
