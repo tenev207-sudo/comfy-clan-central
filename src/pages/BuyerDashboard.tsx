@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,9 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ShoppingBag, Package, ClipboardList, MapPin, Clock, CreditCard, Banknote, Trash2, ShoppingCart, Store, Zap, Users } from "lucide-react";
+import { ShoppingBag, Package, ClipboardList, MapPin, Clock, CreditCard, Banknote, Trash2, ShoppingCart, Store, Zap, Users, Settings } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import DeleteAccountButton from "@/components/DeleteAccountButton";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { toEur } from "@/lib/utils";
@@ -254,7 +253,9 @@ const BuyerDashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("buyer.title")}</h1>
             <div className="flex items-center gap-2">
-              <DeleteAccountButton />
+              <Link to="/settings">
+                <Button variant="outline" size="sm" className="gap-1.5"><Settings className="h-4 w-4" /> Настройки</Button>
+              </Link>
               <Sheet open={cartOpen} onOpenChange={setCartOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1.5 relative">
