@@ -199,6 +199,62 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Blog Section */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Блог (Статии)</h2>
+            <div className="w-16 h-1 bg-primary mx-auto mt-4 rounded-full" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-bold mb-4">Как да намалим хранителните отпадъци и да увеличим печалбата си?</h3>
+                <p className="text-muted-foreground leading-relaxed">Новите регулации изискват по-умно управление на ресурсите. Научете как малките промени в кухнята могат да спестят хиляди левове годишно.</p>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-bold mb-4">Рекламирайте вашите кампании директно чрез нашата платформа</h3>
+                <p className="text-muted-foreground leading-relaxed">Вече предлагаме възможност за бизнесите да споделят своите специални събития и нови менюта пред хиляди активни потребители.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-16 md:py-24 bg-muted/50">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Прозрачен бизнес модел за устойчив растеж</h2>
+            <div className="w-16 h-1 bg-primary mx-auto mt-4 rounded-full" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <Card className="hover:shadow-lg transition-shadow border-primary/20 bg-background/50">
+              <CardContent className="p-8 text-center">
+                <h3 className="text-2xl font-bold mb-2">Старт (Pay-as-you-go)</h3>
+                <div className="text-4xl font-extrabold text-primary mb-4">0.05 лв. <span className="text-lg text-muted-foreground font-normal">на поръчка</span></div>
+                <p className="text-muted-foreground mb-6">Плащате само когато продавате. Идеално за малки обекти.</p>
+                <Button className="w-full" variant="outline">Започни сега</Button>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-lg transition-shadow border-primary bg-primary/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">Препоръчано</div>
+              <CardContent className="p-8 text-center relative z-10">
+                <h3 className="text-2xl font-bold mb-2">Бизнес Абонамент</h3>
+                <div className="text-4xl font-extrabold text-primary mb-4">29.99 лв. <span className="text-lg text-muted-foreground font-normal">/ месец</span></div>
+                <p className="text-muted-foreground mb-6">Включва пълна поддръжка, приоритетно изписване и анализи.</p>
+                <Button className="w-full" variant="default">Свържете се с нас</Button>
+              </CardContent>
+            </Card>
+          </div>
+          <p className="text-sm text-center text-muted-foreground mt-8 max-w-3xl mx-auto italic">
+            Бележка: Нашата система използва автоматизирани микротранзакции. При всяка успешна резервация, платформата удържа минимална такса за поддръжка на сървърите и разплащателната система.
+          </p>
+        </div>
+      </section>
+
       {/* Map CTA */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">

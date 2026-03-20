@@ -51,7 +51,7 @@ const DeleteAccountButton = () => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("account.deleteConfirmTitle")}</AlertDialogTitle>
+          <AlertDialogTitle>Сигурни ли сте, че искате да изтриете акаунта си?</AlertDialogTitle>
           <AlertDialogDescription>{t("account.deleteConfirmDesc")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -19,6 +19,7 @@ import Partners from "./pages/Partners";
 import Delivery from "./pages/Delivery";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import UserSettings from "./pages/UserSettings";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/role" element={<RolePicker />} />
               <Route path="/seller" element={<SellerDashboard />} />
               <Route path="/buyer" element={<BuyerDashboard />} />
+              <Route path="/settings" element={<UserSettings />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/products" element={<Products />} />
               <Route path="/terms" element={<Terms />} />

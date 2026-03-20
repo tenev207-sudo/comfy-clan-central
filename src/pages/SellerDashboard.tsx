@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Package, Plus, QrCode, ShoppingBag, Trash2, CheckCircle, Database, Zap, Handshake, Clock, ImagePlus } from "lucide-react";
-import DeleteAccountButton from "@/components/DeleteAccountButton";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -293,7 +292,6 @@ const SellerDashboard = () => {
               <p className="text-muted-foreground text-sm">{profile?.shop_name}</p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <DeleteAccountButton />
               <Button variant="outline" size="sm" onClick={() => setShowScanner(true)} className="gap-1.5">
                 <QrCode className="h-4 w-4" /> {t("seller.scanBarcode")}
               </Button>
